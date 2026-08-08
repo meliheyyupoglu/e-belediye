@@ -28,6 +28,7 @@ export interface MapLocation {
 interface Props {
   value: MapLocation | null;
   onChange: (loc: MapLocation) => void;
+  onGeocodeLoading?: (loading: boolean) => void;
   mapLabel: string;
   addressFormat: AddressFormat;
 }
@@ -56,44 +57,18 @@ async function fetchAddress(lat: number, lng: number, format: AddressFormat) {
   }>;
 }
 
-function AddressDisplay({ location, format }: { location: MapLocation; format: AddressFormat }) {
-  if (format === "detailed") {
-    return (
-      <div className="space-y-0.5">
-        <p>{location.il} {location.ilce}</p>
-        {location.mahalle && <p>{location.mahalle}</p>}
-        {location.caddeSokak && (
-          <p>
-            {location.caddeSokak}
-            {location.binaNo ? `, Bina No ${location.binaNo}` : ""}
-          </p>
-        )}
-        {!location.mahalle && !location.caddeSokak && location.adres && (
-          <p>{location.adres}</p>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-0.5">
-      <p>{location.il || "Hatay"} {location.ilce || "Dörtyol"}</p>
-      {location.mahalle && <p>{location.mahalle}</p>}
-      {location.caddeSokak && <p>{location.caddeSokak}</p>}
-      {!location.mahalle && !location.caddeSokak && location.adres && (
-        <p>{location.adres}</p>
-      )}
-    </div>
-  );
-}
-
-export default function MapPickerInner({ value, onChange, mapLabel, addressFormat }: Props) {
+export default function MapPickerInner({
+  value,
+  onChange,
+  onGeocodeLoading,
+  mapLabel,
+  addressFormat,
+}: Props) {
   const [geoLoading, setGeoLoading] = useState(false);
-  const [addressLoading, setAddressLoading] = useState(false);
 
   async function handleLocationChange(loc: MapLocation) {
     onChange(loc);
-    setAddressLoading(true);
+    onGeocodeLoading?.(true);
     const parsed = await fetchAddress(loc.lat, loc.lng, addressFormat);
     if (parsed) {
       onChange({
@@ -106,7 +81,7 @@ export default function MapPickerInner({ value, onChange, mapLabel, addressForma
         binaNo: parsed.binaNo,
       });
     }
-    setAddressLoading(false);
+    onGeocodeLoading?.(false);
   }
 
   function locateMe() {
@@ -129,7 +104,7 @@ export default function MapPickerInner({ value, onChange, mapLabel, addressForma
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="form-label mb-0">{mapLabel} *</label>
+        <label className="form-label mb-0">{mapLabel}</label>
         <button
           type="button"
           onClick={locateMe}
@@ -155,20 +130,8 @@ export default function MapPickerInner({ value, onChange, mapLabel, addressForma
         </MapContainer>
       </div>
       <p className="mt-2 text-xs text-gray-500">
-        Haritaya tıklayarak konum seçin. Dörtyol ilçe sınırları içinde olmalıdır.
+        Haritaya tıklayarak konum seçin. Adres otomatik olarak aşağıdaki alana yazılır.
       </p>
-      {value && (
-        <div className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-800">
-          <span className="font-medium block mb-1">Seçilen adres:</span>
-          {addressLoading ? (
-            <span className="text-xs">Adres alınıyor...</span>
-          ) : value.adres || value.mahalle || value.caddeSokak ? (
-            <AddressDisplay location={value} format={addressFormat} />
-          ) : (
-            <span className="text-xs">{value.lat.toFixed(5)}, {value.lng.toFixed(5)}</span>
-          )}
-        </div>
-      )}
     </div>
   );
 }

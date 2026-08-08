@@ -17,13 +17,12 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<number | null>(null);
   const [location, setLocation] = useState<MapLocation | null>(null);
-  const [caddeSokak, setCaddeSokak] = useState("");
+  const [adres, setAdres] = useState("");
+  const [adresLoading, setAdresLoading] = useState(false);
 
   function handleLocationChange(loc: MapLocation) {
     setLocation(loc);
-    if (sikayet.showCaddeSokak && loc.caddeSokak) {
-      setCaddeSokak(loc.caddeSokak);
-    }
+    if (loc.adres) setAdres(loc.adres);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -34,8 +33,12 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
       setError("Lütfen haritadan konumunuzu seçin.");
       return;
     }
-    if (sikayet.showCaddeSokak && !location && !caddeSokak.trim()) {
-      setError("Lütfen haritadan konum seçin veya cadde/sokak adını yazın.");
+    if (!adres.trim() && sikayet.requireMap) {
+      setError("Lütfen adres bilgisini doldurun.");
+      return;
+    }
+    if (sikayet.showCaddeSokak && !location && !adres.trim()) {
+      setError("Lütfen haritadan konum seçin veya adres yazın.");
       return;
     }
     if (location && !isInDortyolBounds(location.lat, location.lng)) {
@@ -50,12 +53,12 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
     fd.set("departman", sikayet.departman);
     fd.set("konu", sikayet.konu);
     fd.set("basvuru_tipi", sikayet.id);
+    fd.set("adres", adres.trim());
     if (location) {
       fd.set("lat", String(location.lat));
       fd.set("lng", String(location.lng));
-      if (location.adres) fd.set("adres", location.adres);
     }
-    if (caddeSokak.trim()) fd.set("cadde_sokak", caddeSokak.trim());
+    if (location?.caddeSokak) fd.set("cadde_sokak", location.caddeSokak);
 
     try {
       const res = await fetch("/api/basvurular", { method: "POST", body: fd });
@@ -67,7 +70,7 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
       setSuccess(data.id);
       form.reset();
       setLocation(null);
-      setCaddeSokak("");
+      setAdres("");
     } catch {
       setError("Bağlantı hatası. Lütfen tekrar deneyin.");
     } finally {
@@ -95,29 +98,25 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
         <MapLocationPicker
           value={location}
           onChange={handleLocationChange}
+          onGeocodeLoading={setAdresLoading}
           mapLabel={sikayet.mapLabel}
           addressFormat={sikayet.addressFormat}
         />
 
-        {sikayet.showCaddeSokak && (
-          <div>
-            <label className="form-label">Cadde / Sokak Adı</label>
-            <input
-              value={caddeSokak}
-              onChange={(e) => setCaddeSokak(e.target.value)}
-              className="form-input"
-              placeholder="Haritadan seçildiğinde otomatik dolar veya elle yazabilirsiniz"
-            />
-            {location?.mahalle && (
-              <p className="mt-1 text-xs text-gray-500">
-                Mahalle: <span className="font-medium">{location.mahalle}</span>
-              </p>
-            )}
-            <p className="mt-1 text-xs text-gray-400">
-              Haritadan işaretleyemiyorsanız cadde veya sokak adını yazabilirsiniz.
-            </p>
-          </div>
-        )}
+        <div>
+          <label className="form-label">Adres {sikayet.requireMap ? "*" : ""}</label>
+          <input
+            name="adres_display"
+            value={adres}
+            onChange={(e) => setAdres(e.target.value)}
+            className="form-input"
+            placeholder={adresLoading ? "Adres alınıyor..." : "Haritadan seçin veya elle yazın"}
+            disabled={adresLoading}
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            Haritaya tıkladığınızda adres otomatik dolar. Gerekirse düzenleyebilirsiniz.
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
@@ -163,7 +162,7 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
         <input type="hidden" name="departman" value={sikayet.departman} />
         <input type="hidden" name="konu" value={sikayet.konu} />
 
-        <button type="submit" className="btn-primary w-full py-3" disabled={loading}>
+        <button type="submit" className="btn-primary w-full py-3" disabled={loading || adresLoading}>
           {loading ? "Gönderiliyor..." : "Şikayeti Gönder"}
         </button>
       </form>

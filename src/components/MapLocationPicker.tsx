@@ -14,6 +14,7 @@ const MapPickerInner = dynamic(() => import("./MapPickerInner"), {
 interface Props {
   value: MapLocation | null;
   onChange: (loc: MapLocation) => void;
+  onGeocodeLoading?: (loading: boolean) => void;
   mapLabel: string;
   addressFormat: AddressFormat;
 }
