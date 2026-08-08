@@ -237,13 +237,22 @@ export async function duyuruEkle(data: Omit<Duyuru, "id" | "active">): Promise<n
 
 export async function duyuruGuncelle(id: number, data: Partial<Duyuru>): Promise<boolean> {
   if (!(await initDb())) return false;
+  const existing = await duyuruGetir(id);
+  if (!existing) return false;
+
   const db = getDb()!;
   const r = await db.execute({
     sql: `UPDATE duyurular SET title=?, summary=?, content=?, date=?, category=?, href=?, active=?
           WHERE id=?`,
     args: [
-      data.title, data.summary, data.content, data.date,
-      data.category, data.href, data.active ?? 1, id,
+      data.title ?? existing.title,
+      data.summary ?? existing.summary,
+      data.content ?? existing.content,
+      data.date ?? existing.date,
+      data.category ?? existing.category,
+      data.href ?? existing.href,
+      data.active ?? existing.active,
+      id,
     ],
   });
   return r.rowsAffected > 0;
