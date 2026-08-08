@@ -136,9 +136,9 @@ export async function sendStatusChangeEmail(data: {
   });
 }
 
-export async function sendOtpEmail(data: { to: string; adSoyad?: string; otp: string }) {
+export async function sendOtpEmail(data: { to: string; adSoyad?: string; kod: string }) {
   if (!process.env.RESEND_API_KEY) {
-    console.log(`[email] OTP ${data.otp} → ${data.to}${data.adSoyad ? ` (${data.adSoyad})` : ""}`);
+    console.log(`[email] OTP ${data.kod} → ${data.to}${data.adSoyad ? ` (${data.adSoyad})` : ""}`);
     return { sent: false, reason: "email_not_configured" as const };
   }
 
@@ -149,7 +149,7 @@ export async function sendOtpEmail(data: { to: string; adSoyad?: string; otp: st
       <h2>T.C. Dörtyol Belediyesi</h2>
       <p>${data.adSoyad ? `Sayın ${data.adSoyad},` : "Merhaba,"}</p>
       <p>e-Belediye doğrulama kodunuz:</p>
-      <p style="font-size:24px;font-weight:bold;letter-spacing:4px">${data.otp}</p>
+      <p style="font-size:24px;font-weight:bold;letter-spacing:4px">${data.kod}</p>
       <p>Bu kodu kimseyle paylaşmayın. Kod 10 dakika geçerlidir.</p>
     `,
   });
@@ -179,36 +179,6 @@ export async function sendDuyuruEmail(data: {
       <p style="font-size:12px;color:#666">Bu e-postayı duyuru aboneliğiniz nedeniyle aldınız.</p>
     `,
   });
-}
-
-export async function sendOtpEmail(data: { to: string; kod: string; adSoyad?: string }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey || !data.to) return { sent: false, reason: "email_not_configured" };
-
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.RESEND_FROM || "e-Belediye <onboarding@resend.dev>",
-        to: [data.to],
-        subject: "e-Belediye Doğrulama Kodu",
-        html: `
-          <h2>T.C. Dörtyol Belediyesi</h2>
-          ${data.adSoyad ? `<p>Sayın ${data.adSoyad},</p>` : "<p>Sayın vatandaşımız,</p>"}
-          <p>Başvuru geçmişi sorgulama doğrulama kodunuz:</p>
-          <p style="font-size:28px;font-weight:bold;letter-spacing:4px;">${data.kod}</p>
-          <p>Bu kod 10 dakika geçerlidir. Kimseyle paylaşmayın.</p>
-        `,
-      }),
-    });
-    return { sent: res.ok, reason: res.ok ? "ok" : "api_error" };
-  } catch {
-    return { sent: false, reason: "network_error" };
-  }
 }
 
 export async function sendSmsNotification(telefon: string, mesaj: string) {
