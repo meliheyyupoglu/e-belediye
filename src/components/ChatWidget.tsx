@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { getWelcomeMessage, QUICK_QUESTIONS } from "@/lib/faq";
 
 interface Message {
   role: "user" | "bot";
@@ -9,20 +10,26 @@ interface Message {
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "bot", text: "Merhaba! T.C. Dörtyol Belediyesi e-Belediye asistanıyım. Size nasıl yardımcı olabilirim?" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [initialized, setInitialized] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (open && !initialized) {
+      setMessages([{ role: "bot", text: getWelcomeMessage() }]);
+      setInitialized(true);
+    }
+  }, [open, initialized]);
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  async function send() {
-    if (!input.trim() || loading) return;
-    const userMsg = input.trim();
+  async function sendMessage(text: string) {
+    if (!text.trim() || loading) return;
+    const userMsg = text.trim();
     setInput("");
     setMessages((m) => [...m, { role: "user", text: userMsg }]);
     setLoading(true);
@@ -39,6 +46,12 @@ export default function ChatWidget() {
     }
     setLoading(false);
   }
+
+  function send() {
+    sendMessage(input);
+  }
+
+  const showQuickQuestions = messages.length <= 1;
 
   return (
     <>
@@ -62,12 +75,28 @@ export default function ChatWidget() {
         <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-fade-in">
           <div className="bg-primary px-4 py-3 text-white">
             <p className="font-semibold text-sm">e-Belediye Asistan</p>
-            <p className="text-xs text-blue-100">Sık sorulan sorular</p>
+            <p className="text-xs text-blue-100">Dörtyol Belediyesi dijital yardımcınız</p>
           </div>
+
+          {showQuickQuestions && (
+            <div className="px-3 pt-3 flex flex-wrap gap-1.5">
+              {QUICK_QUESTIONS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => sendMessage(q)}
+                  className="text-xs px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50 text-gray-600 hover:bg-blue-50 hover:border-primary/30 hover:text-primary transition"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-72">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-line ${
                   m.role === "user" ? "bg-primary text-white rounded-br-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"
                 }`}>
                   {m.text}
@@ -81,6 +110,7 @@ export default function ChatWidget() {
             )}
             <div ref={bottomRef} />
           </div>
+
           <div className="border-t p-3 flex gap-2">
             <input
               value={input}

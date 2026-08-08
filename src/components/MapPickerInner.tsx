@@ -114,12 +114,12 @@ export default function MapPickerInner({
           {geoLoading ? "Konum alınıyor..." : "Konumumu Bul"}
         </button>
       </div>
-      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm z-0">
+      <div className="map-picker rounded-xl border border-gray-200 shadow-sm">
         <MapContainer
           center={center}
           zoom={value ? 16 : 14}
-          className="h-72 w-full"
-          scrollWheelZoom
+          className="h-full w-full"
+          scrollWheelZoom={false}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

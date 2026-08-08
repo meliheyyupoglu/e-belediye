@@ -104,6 +104,16 @@
   .cta-section {
     @apply rounded-2xl bg-gradient-to-r from-primary to-primary-dark p-8 md:p-12 text-white text-center shadow-lg;
   }
+
+  .map-picker {
+    @apply relative isolate overflow-hidden z-0 h-72;
+  }
+
+  .map-picker .leaflet-container {
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 0;
+  }
 }
 
 @layer utilities {
