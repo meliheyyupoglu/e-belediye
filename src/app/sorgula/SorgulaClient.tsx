@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import PageHeader from "@/components/PageHeader";
 import type { Basvuru } from "@/lib/db";
+
+const DURUM_COLORS: Record<string, string> = {
+  "İncelemede": "bg-yellow-100 text-yellow-800",
+  "Devam Ediyor": "bg-blue-100 text-blue-800",
+  "Çözüldü": "bg-green-100 text-green-800",
+  "Reddedildi": "bg-red-100 text-red-800",
+};
 
 export default function SorgulaPage() {
   const searchParams = useSearchParams();
@@ -17,6 +25,7 @@ export default function SorgulaPage() {
       setId(qId);
       sorgula(qId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   async function sorgula(basvuruId?: string) {
@@ -33,85 +42,83 @@ export default function SorgulaPage() {
       }
       setBasvuru(await res.json());
     } catch {
-      setError("Bağlantı hatası");
+      setError("Bağlantı hatası.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold text-primary">Başvuru Sorgula</h1>
-
-      <div className="mb-6 flex max-w-md gap-3">
-        <input
-          type="number"
-          min={1}
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          className="form-input"
-          placeholder="Başvuru Numarası"
+    <>
+      <div className="site-container pt-8">
+        <PageHeader
+          title="Başvuru Sorgula"
+          subtitle="Başvuru numaranız ile sürecinizi anlık olarak takip edebilirsiniz."
+          breadcrumbs={[{ label: "Başvuru Sorgula" }]}
         />
-        <button
-          onClick={() => sorgula()}
-          className="btn-primary whitespace-nowrap"
-          disabled={loading}
-        >
-          {loading ? "..." : "Sorgula"}
-        </button>
       </div>
 
-      {error && (
-        <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800">
-          {error}
-        </div>
-      )}
+      <section className="content-section pt-0">
+        <div className="max-w-2xl">
+          <div className="info-card mb-6">
+            <label className="form-label">Başvuru Numarası</label>
+            <div className="flex gap-3">
+              <input
+                type="number"
+                min={1}
+                value={id}
+                onChange={(e) => setId(e.target.value)}
+                className="form-input"
+                placeholder="Örn: 1"
+                onKeyDown={(e) => e.key === "Enter" && sorgula()}
+              />
+              <button onClick={() => sorgula()} className="btn-primary whitespace-nowrap px-6" disabled={loading}>
+                {loading ? "..." : "Sorgula"}
+              </button>
+            </div>
+          </div>
 
-      {basvuru && (
-        <div className="info-card max-w-2xl">
-          <h2 className="mb-3 text-lg font-semibold">
-            Başvuru No: {basvuru.id}
-          </h2>
-          <dl className="space-y-2 text-sm">
-            <div>
-              <dt className="font-medium">Ad Soyad</dt>
-              <dd>{basvuru.ad_soyad}</dd>
+          {error && (
+            <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-800 text-sm mb-4">
+              {error}
             </div>
-            <div>
-              <dt className="font-medium">Müdürlük</dt>
-              <dd>{basvuru.departman}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Konu</dt>
-              <dd>{basvuru.konu}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Detay</dt>
-              <dd>{basvuru.detay}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Durum</dt>
-              <dd>{basvuru.durum}</dd>
-            </div>
-            <div>
-              <dt className="font-medium">Tarih</dt>
-              <dd>{basvuru.tarih}</dd>
-            </div>
-            {basvuru.notlar && (
-              <div>
-                <dt className="font-medium">Yetkili Notu</dt>
-                <dd>{basvuru.notlar}</dd>
+          )}
+
+          {basvuru && (
+            <div className="info-card animate-fade-in">
+              <div className="flex items-start justify-between mb-4">
+                <h2 className="text-lg font-bold">Başvuru #{basvuru.id}</h2>
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${DURUM_COLORS[basvuru.durum] || "bg-gray-100"}`}>
+                  {basvuru.durum}
+                </span>
               </div>
-            )}
-            {basvuru.belge_dosya && (
-              <div>
-                <dt className="font-medium">Ek Belge</dt>
-                <dd>{basvuru.belge_dosya}</dd>
-              </div>
-            )}
-          </dl>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                {[
+                  ["Ad Soyad", basvuru.ad_soyad],
+                  ["Müdürlük", basvuru.departman],
+                  ["Konu", basvuru.konu],
+                  ["Tarih", basvuru.tarih],
+                ].map(([label, value]) => (
+                  <div key={label as string}>
+                    <dt className="text-gray-400 text-xs mb-0.5">{label}</dt>
+                    <dd className="font-medium text-gray-800">{value}</dd>
+                  </div>
+                ))}
+                <div className="sm:col-span-2">
+                  <dt className="text-gray-400 text-xs mb-0.5">Detay</dt>
+                  <dd className="text-gray-700">{basvuru.detay}</dd>
+                </div>
+                {basvuru.notlar && (
+                  <div className="sm:col-span-2 rounded-lg bg-blue-50 p-3">
+                    <dt className="text-primary text-xs font-medium mb-0.5">Yetkili Notu</dt>
+                    <dd className="text-gray-700">{basvuru.notlar}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </section>
+    </>
   );
 }

@@ -1,28 +1,31 @@
-# e-Belediye - T.C. Dörtyol Belediyesi
+# e-Belediye - T.C. Doertyol Belediyesi
 
-Vatandaş Başvuru ve Yönetim Sistemi (Next.js + Turso/libSQL)
+Next.js + Turso ile Vatandas Basvuru ve Yonetim Sistemi
 
-## Özellikler
+## Ozellikler
 
-- Ana Sayfa (istatistikler)
-- Vatandaş Başvuru Formu
-- Başvuru Sorgulama
-- Müdürlüklerimiz (liste + detay sayfaları)
-- Belediye Yönetici Paneli
+- Ana Sayfa (canli istatistikler, duyurular, e-hizmetler)
+- Online Basvuru + dosya yukleme (Vercel Blob)
+- Basvuru Sorgulama
+- Mudurlukler (arama + detay)
+- Duyurular sayfasi + CMS yonetimi
+- Baskan & Meclis
+- Iletisim formu + Google Maps
+- Site ici arama (Ctrl+K)
+- Canli destek chatbot (SSS)
+- E-posta bildirimi (Resend) + SMS (Twilio, istege bagli)
 
-## Yerel Geliştirme
+## Vercel Deploy (ONEMLI)
 
-`ash
-npm install
-npm run dev
-`
+Site calismasi icin Turso veritabani ZORUNLUDUR:
 
-Uygulama http://localhost:3000 adresinde açılır.
+1. https://turso.tech adresinde ucretsiz DB olusturun
+2. Vercel > Project > Settings > Environment Variables:
+   - TURSO_DATABASE_URL = libsql://xxx.turso.io
+   - TURSO_AUTH_TOKEN = token
+3. (Istege bagli) Resend, Blob, Twilio anahtarlari - bkz. .env.example
+4. Redeploy edin
 
-## Vercel Deploy
+## Yerel Gelistirme
 
-1. GitHub'a push edin
-2. Vercel'de projeyi import edin
-3. Turso veritabani olusturun: https://turso.tech
-4. Vercel env: TURSO_DATABASE_URL, TURSO_AUTH_TOKEN
-5. Deploy edin
+npm install && npm run dev

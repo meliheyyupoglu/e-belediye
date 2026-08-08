@@ -1,4 +1,6 @@
-import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import ChatWidget from "@/components/ChatWidget";
 import { BELEDIYE_ADI, SISTEM_ADI } from "@/lib/constants";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -15,11 +17,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body>
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 overflow-auto p-6 md:p-8">{children}</main>
-        </div>
+      <body className="flex min-h-screen flex-col bg-gray-50">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <ChatWidget />
       </body>
     </html>
   );

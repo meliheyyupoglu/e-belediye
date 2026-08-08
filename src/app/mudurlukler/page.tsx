@@ -1,50 +1,30 @@
-import Link from "next/link";
-import { BELEDIYE_ADI, DEPARTMANLAR } from "@/lib/constants";
-import {
-  BELEDIYE_ILETISIM,
-  MUDURLUK_BILGILERI,
-} from "@/lib/mudurlukler";
-import { MUDURLUK_TO_SLUG } from "@/lib/slug";
+import PageHeader from "@/components/PageHeader";
+import MudurlukGrid from "@/components/MudurlukGrid";
+import { BELEDIYE_ILETISIM } from "@/lib/mudurlukler";
 
 export const dynamic = "force-dynamic";
 
 export default function MudurluklerPage() {
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold text-primary">Müdürlüklerimiz</h1>
-
-      <div className="welcome-text mb-6">
-        <strong>{BELEDIYE_ADI}</strong> bünyesindeki müdürlükler hakkında resmi
-        bilgilere buradan ulaşabilirsiniz.
+    <>
+      <div className="site-container pt-8">
+        <PageHeader
+          title="Müdürlüklerimiz"
+          subtitle="Belediyemiz bünyesindeki tüm müdürlüklerin görev, iletişim ve detay bilgilerine buradan ulaşabilirsiniz."
+          breadcrumbs={[{ label: "Müdürlüklerimiz" }]}
+        />
       </div>
-
-      <p className="mb-6 text-sm text-gray-600">
-        <strong>Merkez:</strong> {BELEDIYE_ILETISIM.adres} |{" "}
-        <strong>Telefon:</strong> {BELEDIYE_ILETISIM.telefon}
-      </p>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {DEPARTMANLAR.map((ad) => {
-          const bilgi = MUDURLUK_BILGILERI[ad];
-          const slug = MUDURLUK_TO_SLUG[ad];
-          const ozet = bilgi?.aciklama?.slice(0, 140) + "..." || "";
-
-          return (
-            <div key={ad} className="mudurluk-card">
-              <h3 className="mb-1 font-semibold text-primary">{ad}</h3>
-              {bilgi?.mudur && (
-                <p className="mb-2 text-sm text-gray-600">
-                  <strong>Müdür:</strong> {bilgi.mudur}
-                </p>
-              )}
-              <p className="mb-3 text-sm text-gray-500">{ozet}</p>
-              <Link href={`/mudurlukler/${slug}`} className="btn-primary text-sm">
-                Detayları Gör
-              </Link>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+      <section className="content-section pt-0">
+        <div className="mb-6 flex flex-wrap gap-4 text-sm text-gray-600 bg-white rounded-xl p-4 border border-gray-200">
+          <span>
+            <strong>Merkez:</strong> {BELEDIYE_ILETISIM.adres}
+          </span>
+          <span>
+            <strong>Telefon:</strong> {BELEDIYE_ILETISIM.telefon}
+          </span>
+        </div>
+        <MudurlukGrid />
+      </section>
+    </>
   );
 }

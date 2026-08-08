@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import PageHeader from "@/components/PageHeader";
 import {
   BELEDIYE_ILETISIM,
   MUDURLUK_BILGILERI,
@@ -24,63 +25,64 @@ export default function MudurlukDetayPage({
     : BELEDIYE_ILETISIM.telefon_santral;
 
   return (
-    <div>
-      <Link href="/mudurlukler" className="btn-secondary mb-6 inline-block">
-        Müdürlükler Listesine Dön
-      </Link>
-
-      <div className="mudurluk-detail-header mb-6">
-        <h1 className="text-2xl font-bold">{ad}</h1>
-        <p className="mt-1 text-blue-100">Müdür: {bilgi.mudur}</p>
+    <>
+      <div className="site-container pt-8">
+        <PageHeader
+          title={ad}
+          subtitle={`Müdür: ${bilgi.mudur}`}
+          breadcrumbs={[
+            { label: "Müdürlüklerimiz", href: "/mudurlukler" },
+            { label: ad },
+          ]}
+        />
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div>
-          <h2 className="mb-2 font-semibold">İletişim</h2>
-          <ul className="space-y-1 text-sm text-gray-600">
-            <li>
-              <strong>Adres:</strong> {BELEDIYE_ILETISIM.adres}
-            </li>
-            <li>
-              <strong>Telefon:</strong> {BELEDIYE_ILETISIM.telefon}
-            </li>
-            <li>
-              <strong>Santral / Dahili:</strong> {telefon}
-            </li>
-          </ul>
+      <section className="content-section pt-0 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="info-card">
+            <h2 className="font-semibold mb-3 text-primary">İletişim</h2>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li><strong>Adres:</strong> {BELEDIYE_ILETISIM.adres}</li>
+              <li><strong>Telefon:</strong> {BELEDIYE_ILETISIM.telefon}</li>
+              <li><strong>Santral / Dahili:</strong> {telefon}</li>
+            </ul>
+          </div>
+          <div className="info-card">
+            <h2 className="font-semibold mb-3 text-primary">Resmi Kaynak</h2>
+            <a
+              href={bilgi.kaynak}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary underline hover:no-underline"
+            >
+              dortyol.bel.tr üzerinde görüntüle →
+            </a>
+          </div>
         </div>
-        <div>
-          <h2 className="mb-2 font-semibold">Resmi Kaynak</h2>
-          <a
-            href={bilgi.kaynak}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-primary underline"
-          >
-            dortyol.bel.tr üzerinde görüntüle
-          </a>
+
+        <div className="info-card">
+          <h2 className="font-semibold mb-3 text-primary">Müdürlük Hakkında</h2>
+          <p className="leading-relaxed text-gray-600">{bilgi.aciklama}</p>
         </div>
-      </div>
 
-      <h2 className="mb-2 text-lg font-semibold">Müdürlük Hakkında</h2>
-      <p className="mb-6 leading-relaxed text-gray-600">{bilgi.aciklama}</p>
+        {bilgi.gorevler.length > 0 && (
+          <div className="info-card">
+            <h2 className="font-semibold mb-3 text-primary">Görev ve Sorumluluklar</h2>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {bilgi.gorevler.map((g) => (
+                <li key={g} className="flex items-start gap-2 text-sm text-gray-600">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  {g}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-      {bilgi.gorevler.length > 0 && (
-        <>
-          <h2 className="mb-2 text-lg font-semibold">
-            Görev ve Sorumluluklar
-          </h2>
-          <ul className="mb-6 list-inside list-disc space-y-1 text-gray-600">
-            {bilgi.gorevler.map((g) => (
-              <li key={g}>{g}</li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      <Link href="/basvuru" className="btn-primary">
-        Bu Müdürlüğe Başvuru Yap
-      </Link>
-    </div>
+        <Link href="/basvuru" className="btn-primary">
+          Bu Müdürlüğe Başvuru Yap
+        </Link>
+      </section>
+    </>
   );
 }

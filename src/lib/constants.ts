@@ -1,5 +1,16 @@
+export const NAV_ITEMS = [
+  { href: "/", label: "Ana Sayfa" },
+  { href: "/duyurular", label: "Duyurular" },
+  { href: "/mudurlukler", label: "Müdürlüklerimiz" },
+  { href: "/baskan-meclis", label: "Başkan & Meclis" },
+  { href: "/iletisim", label: "İletişim" },
+  { href: "/basvuru", label: "Başvuru Yap" },
+  { href: "/sorgula", label: "Başvuru Sorgula" },
+] as const;
+
 export const BELEDIYE_ADI = "T.C. Dörtyol Belediyesi";
 export const SISTEM_ADI = "Vatandaş Başvuru ve Yönetim Sistemi";
+export const BELEDIYE_SLOGAN = "Dörtyol'un Geleceğine Birlikte";
 
 export const DEPARTMANLAR = [
   "Fen İşleri Müdürlüğü",
@@ -27,9 +38,6 @@ export const DURUMLAR = [
 export type Durum = (typeof DURUMLAR)[number];
 
 export const MENU_ITEMS = [
-  { href: "/", label: "Ana Sayfa" },
-  { href: "/basvuru", label: "Vatandaş Başvuru Yap" },
-  { href: "/sorgula", label: "Başvuru Sorgula" },
-  { href: "/mudurlukler", label: "Müdürlüklerimiz" },
+  ...NAV_ITEMS,
   { href: "/yonetici", label: "Belediye Yönetici Paneli" },
 ] as const;

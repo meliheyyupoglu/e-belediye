@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import {
-  basvuruDurumGuncelle,
-  basvuruSorgulaId,
-} from "@/lib/db";
+import { basvuruDurumGuncelle, basvuruSorgulaId } from "@/lib/db";
 import { DURUMLAR } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET(
   _request: Request,
