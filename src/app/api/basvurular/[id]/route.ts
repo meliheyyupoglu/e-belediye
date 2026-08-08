@@ -34,7 +34,7 @@ export async function PATCH(
     const body = await request.json();
     const { durum, notlar } = body;
 
-    if (!DURUMLAR.includes(durum)) {
+    if (!(DURUMLAR as readonly string[]).includes(durum)) {
       return NextResponse.json({ error: "Gecersiz durum" }, { status: 400 });
     }
 

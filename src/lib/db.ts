@@ -5,6 +5,10 @@ let _db: Client | null = null;
 let _initialized = false;
 let _initFailed = false;
 
+function rowGet(row: unknown, key: string): unknown {
+  return (row as Record<string, unknown>)[key];
+}
+
 export function isDbConfigured(): boolean {
   return Boolean(process.env.TURSO_DATABASE_URL);
 }
@@ -55,7 +59,7 @@ export async function initDb(): Promise<boolean> {
     )`);
 
     const count = await db.execute("SELECT COUNT(*) as c FROM duyurular");
-    const n = Number((count.rows[0] as { c: number }).c);
+    const n = Number(rowGet(count.rows[0], "c") ?? 0);
     if (n === 0) {
       for (const d of SEED_DUYURULAR) {
         await db.execute({
@@ -68,7 +72,7 @@ export async function initDb(): Promise<boolean> {
 
     // email kolonu migration
     const cols = await db.execute("PRAGMA table_info(basvurular)");
-    const colNames = cols.rows.map((r) => (r as { name: string }).name);
+    const colNames = cols.rows.map((r) => String(rowGet(r, "name") ?? ""));
     if (!colNames.includes("email")) {
       await db.execute("ALTER TABLE basvurular ADD COLUMN email TEXT DEFAULT ''");
     }
