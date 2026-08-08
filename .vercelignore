@@ -1,0 +1,10 @@
+app.py
+database.py
+_setup_files.py
+requirements.txt
+.streamlit/
+config/
+__pycache__/
+uploads/
+belediye.db
+legacy/

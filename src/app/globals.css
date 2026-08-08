@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+}
+
+.hero-card {
+  @apply rounded-xl border-l-[6px] border-danger bg-gradient-to-br from-primary to-primary-dark p-8 text-white;
+}
+
+.stat-card {
+  @apply rounded-lg border border-gray-200 bg-gray-50 p-5 text-center;
+}
+
+.stat-card.primary {
+  @apply border-t-4 border-t-primary;
+}
+
+.stat-card.success {
+  @apply border-t-4 border-t-success;
+}
+
+.stat-card.warning {
+  @apply border-t-4 border-t-warning;
+}
+
+.stat-card.danger {
+  @apply border-t-4 border-t-danger;
+}
+
+.welcome-text {
+  @apply rounded-lg border-l-4 border-primary bg-gray-50 p-6 leading-relaxed text-gray-600;
+}
+
+.info-card {
+  @apply rounded-lg border border-gray-200 bg-gray-50 p-5;
+}
+
+.mudurluk-card {
+  @apply rounded-lg border border-gray-200 border-l-4 border-l-primary bg-gray-50 p-5;
+}
+
+.mudurluk-detail-header {
+  @apply rounded-lg border-l-[6px] border-danger bg-gradient-to-br from-primary to-primary-dark p-6 text-white;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-dark;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50;
+}
+
+.form-input {
+  @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary;
+}
+
+.form-label {
+  @apply mb-1 block text-sm font-medium text-gray-700;
+}
+
+.sidebar-link {
+  @apply block w-full px-3 py-2 text-left text-sm text-gray-800 transition hover:text-primary;
+}
+
+.sidebar-link.active {
+  @apply font-semibold text-primary;
+}

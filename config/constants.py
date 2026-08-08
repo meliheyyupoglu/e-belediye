@@ -33,5 +33,6 @@ MENU_SECENEKLERI = [
     "Ana Sayfa",
     "Vatandaş Başvuru Yap",
     "Başvuru Sorgula",
+    "Müdürlüklerimiz",
     "Belediye Yönetici Paneli",
 ]

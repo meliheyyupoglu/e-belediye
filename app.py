@@ -13,6 +13,7 @@ from config.constants import (
     MENU_SECENEKLERI,
     SISTEM_ADI,
 )
+from config.mudurlukler import BELEDIYE_ILETISIM, MUDURLUK_BILGILERI
 from database import (
     basvuru_belge_guncelle,
     basvuru_durum_guncelle,
@@ -95,10 +96,20 @@ st.markdown(
             color: #0d6efd !important;
             font-weight: 600 !important;
         }
-        div[data-testid="stSidebar"] .mudurluk-item {
-            font-size: 0.8rem; color: #495057; line-height: 1.5;
-            padding: 0.15rem 0; border-bottom: 1px solid #f1f3f5;
+        .mudurluk-card {
+            background: #F8F9FA; border: 1px solid #dee2e6; border-radius: 10px;
+            padding: 1.2rem; margin-bottom: 0.5rem; border-left: 4px solid #0d6efd;
+            min-height: 120px;
         }
+        .mudurluk-card h3 { color: #0d6efd; font-size: 1rem; margin: 0 0 0.5rem 0; }
+        .mudurluk-card p { color: #495057; font-size: 0.85rem; margin: 0; line-height: 1.5; }
+        .mudurluk-detail-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #084298 100%);
+            color: #fff; padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;
+            border-left: 6px solid #dc3545;
+        }
+        .mudurluk-detail-header h2 { color: #fff; margin: 0; font-size: 1.5rem; }
+        .mudurluk-detail-header p { color: #e7f1ff; margin: 0.5rem 0 0 0; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -117,10 +128,14 @@ def sayfa(name):
 def init_session() -> None:
     if "aktif_sayfa" not in st.session_state:
         st.session_state.aktif_sayfa = MENU_SECENEKLERI[0]
+    if "secilen_mudurluk" not in st.session_state:
+        st.session_state.secilen_mudurluk = None
 
 
 def sayfaya_git(hedef: str) -> None:
     st.session_state.aktif_sayfa = hedef
+    if hedef != "Müdürlüklerimiz":
+        st.session_state.secilen_mudurluk = None
 
 
 def get_stats() -> dict:
@@ -150,10 +165,6 @@ def render_sidebar() -> str:
             sayfaya_git(item)
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="menu-label">Müdürlüklerimiz</div>', unsafe_allow_html=True)
-    for departman in DEPARTMANLAR:
-        st.markdown(f'<div class="mudurluk-item">{departman}</div>', unsafe_allow_html=True)
 
     st.markdown("---")
     st.caption("© 2026 T.C. Dörtyol Belediyesi")
@@ -212,9 +223,109 @@ def render_ana_sayfa() -> None:
     if b2.button("Başvuru Sorgula", use_container_width=True):
         sayfaya_git("Başvuru Sorgula")
         st.rerun()
-    if b3.button("Yönetici Paneli", use_container_width=True):
-        sayfaya_git("Belediye Yönetici Paneli")
+    if b3.button("Müdürlüklerimiz", use_container_width=True):
+        sayfaya_git("Müdürlüklerimiz")
         st.rerun()
+
+
+def render_mudurluk_detay(ad: str) -> None:
+    bilgi = MUDURLUK_BILGILERI.get(ad, {})
+    if st.button("Müdürlükler Listesine Dön", type="secondary"):
+        st.session_state.secilen_mudurluk = None
+        st.rerun()
+
+    mudur = bilgi.get("mudur", "—")
+    dahili = bilgi.get("telefon_dahili")
+    telefon = (
+        f"{BELEDIYE_ILETISIM['telefon_santral']} / {dahili}"
+        if dahili
+        else BELEDIYE_ILETISIM["telefon_santral"]
+    )
+
+    st.markdown(
+        f"""
+        <div class="mudurluk-detail-header">
+            <h2>{ad}</h2>
+            <p>Müdür: {mudur}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**İletişim**")
+        st.markdown(f"- **Adres:** {BELEDIYE_ILETISIM['adres']}")
+        st.markdown(f"- **Telefon:** {BELEDIYE_ILETISIM['telefon']}")
+        st.markdown(f"- **Santral / Dahili:** {telefon}")
+    with c2:
+        st.markdown("**Resmi Kaynak**")
+        kaynak = bilgi.get("kaynak", "https://www.dortyol.bel.tr/mudurlukler")
+        st.markdown(f"[dortyol.bel.tr üzerinde görüntüle]({kaynak})")
+
+    st.divider()
+    st.subheader("Müdürlük Hakkında")
+    st.markdown(bilgi.get("aciklama", "Bilgi bulunamadı."))
+
+    gorevler = bilgi.get("gorevler", [])
+    if gorevler:
+        st.subheader("Görev ve Sorumluluklar")
+        for gorev in gorevler:
+            st.markdown(f"- {gorev}")
+
+    st.divider()
+    if st.button("Bu Müdürlüğe Başvuru Yap", type="primary"):
+        sayfaya_git("Vatandaş Başvuru Yap")
+        st.rerun()
+
+
+@sayfa("Müdürlüklerimiz")
+def render_mudurlukler() -> None:
+    if st.session_state.secilen_mudurluk:
+        render_mudurluk_detay(st.session_state.secilen_mudurluk)
+        return
+
+    st.markdown('<p class="main-header">Müdürlüklerimiz</p>', unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="welcome-text">
+            <strong>{BELEDIYE_ADI}</strong> bünyesindeki müdürlükler hakkında resmi bilgilere
+            buradan ulaşabilirsiniz. Detay görmek istediğiniz müdürlüğe tıklayın.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"**Merkez:** {BELEDIYE_ILETISIM['adres']} | "
+        f"**Telefon:** {BELEDIYE_ILETISIM['telefon']}"
+    )
+    st.divider()
+
+    for i in range(0, len(DEPARTMANLAR), 2):
+        cols = st.columns(2)
+        for j, col in enumerate(cols):
+            idx = i + j
+            if idx >= len(DEPARTMANLAR):
+                break
+            ad = DEPARTMANLAR[idx]
+            bilgi = MUDURLUK_BILGILERI.get(ad, {})
+            ozet = bilgi.get("aciklama", "")[:140] + "..." if bilgi.get("aciklama") else ""
+            mudur = bilgi.get("mudur", "")
+            with col:
+                st.markdown(
+                    f"""
+                    <div class="mudurluk-card">
+                        <h3>{ad}</h3>
+                        <p><strong>Müdür:</strong> {mudur}</p>
+                        <p>{ozet}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button("Detayları Gör", key=f"mudurluk_{idx}", use_container_width=True):
+                    st.session_state.secilen_mudurluk = ad
+                    st.rerun()
 
 
 @sayfa("Vatandaş Başvuru Yap")
