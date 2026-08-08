@@ -72,7 +72,9 @@ export default function MapPickerInner({ value, onChange, mapLabel }: Props) {
     );
   }
 
-  const center = value ? [value.lat, value.lng] as [number, number] : [DORTYOL_CENTER.lat, DORTYOL_CENTER.lng];
+  const center: [number, number] = value
+    ? [value.lat, value.lng]
+    : [DORTYOL_CENTER.lat, DORTYOL_CENTER.lng];
 
   return (
     <div>
