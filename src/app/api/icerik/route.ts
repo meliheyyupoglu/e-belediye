@@ -1,27 +1,23 @@
 import { NextResponse } from "next/server";
-import { icerikleriGetir } from "@/lib/db";
+import { getIcerikByTip } from "@/lib/icerik-seed";
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
-const GECERLI_TIPLER = ["proje", "etkinlik", "basin"] as const;
+const VALID_TIPS = ["proje", "etkinlik", "basin"] as const;
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const tip = searchParams.get("tip")?.trim();
+    const tip = searchParams.get("tip") || "";
 
-    if (!tip || !GECERLI_TIPLER.includes(tip as (typeof GECERLI_TIPLER)[number])) {
-      return NextResponse.json(
-        { error: "Geçerli tip parametresi gerekli: proje, etkinlik veya basin." },
-        { status: 400 }
-      );
+    if (!VALID_TIPS.includes(tip as (typeof VALID_TIPS)[number])) {
+      return NextResponse.json({ error: "Geçersiz tip" }, { status: 400 });
     }
 
-    const icerikler = await icerikleriGetir(tip);
+    const icerikler = getIcerikByTip(tip);
     return NextResponse.json(icerikler);
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
     return NextResponse.json([]);
   }
 }

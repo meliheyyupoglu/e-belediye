@@ -16,22 +16,33 @@ export default function IcerikList({ items, emptyMessage }: IcerikListProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {items.map((item) => (
-        <article key={item.id} className="announcement-card">
-          <time className="text-xs text-gray-400 block mb-2">
-            {new Date(item.date).toLocaleDateString("tr-TR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </time>
-          <h2 className="font-semibold text-gray-900 mb-2">{item.title}</h2>
-          <p className="text-sm text-gray-500 line-clamp-3 mb-3">{item.summary}</p>
-          {item.content && item.content !== item.summary && (
-            <p className="text-sm text-gray-600 line-clamp-4">{item.content}</p>
-          )}
-        </article>
-      ))}
+      {items.map((item) => {
+        const href = (item as Icerik & { href?: string }).href;
+        return (
+          <article key={item.id} className="announcement-card flex flex-col">
+            <time className="text-xs text-gray-400 block mb-2">
+              {new Date(item.date).toLocaleDateString("tr-TR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </time>
+            <h2 className="font-semibold text-gray-900 mb-2">{item.title}</h2>
+            <p className="text-sm text-gray-500 mb-3 flex-1">{item.summary}</p>
+            <p className="text-sm text-gray-600 line-clamp-4 mb-3">{item.content}</p>
+            {href && (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-primary hover:underline mt-auto"
+              >
+                dortyol.bel.tr'de gör →
+              </a>
+            )}
+          </article>
+        );
+      })}
     </div>
   );
 }
