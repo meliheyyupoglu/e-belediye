@@ -29,11 +29,14 @@ export default function AnaSayfa() {
               <Link href="/basvuru" className="btn-primary text-base px-6 py-3">
                 Başvuru Yap
               </Link>
+              <Link href="/basvuru/harita" className="btn-outline-white text-base px-6 py-3">
+                Harita ile Şikayet
+              </Link>
+              <Link href="/randevu" className="btn-outline-white text-base px-6 py-3">
+                Randevu Al
+              </Link>
               <Link href="/sorgula" className="btn-outline-white text-base px-6 py-3">
                 Başvuru Sorgula
-              </Link>
-              <Link href="/mudurlukler" className="btn-outline-white text-base px-6 py-3">
-                Müdürlüklerimiz
               </Link>
             </div>
           </div>

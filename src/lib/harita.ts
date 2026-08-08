@@ -70,3 +70,12 @@ export function getHaritaSikayet(slug: string) {
 export function getHaritaSikayetById(id: string) {
   return HARITA_SIKAYETLERI.find((s) => s.id === id);
 }
+
+/** Basitleştirilmiş Dörtyol mahalle merkezleri */
+export const MAHALLE_NOKTALARI = [
+  { ad: "Numune Evler", lat: 36.8395, lng: 36.2180 },
+  { ad: "Yeni Camii", lat: 36.8410, lng: 36.2140 },
+  { ad: "Altınçağ", lat: 36.8350, lng: 36.2220 },
+  { ad: "Cumhuriyet", lat: 36.8430, lng: 36.2100 },
+  { ad: "Sanayi", lat: 36.8320, lng: 36.2050 },
+] as const;

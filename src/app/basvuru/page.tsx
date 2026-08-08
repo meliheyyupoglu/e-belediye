@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
+import BasvuruQrCode from "@/components/BasvuruQrCode";
 import { DEPARTMANLAR } from "@/lib/constants";
 
 export default function BasvuruPage() {
@@ -67,6 +68,7 @@ export default function BasvuruPage() {
               <button onClick={() => router.push(`/sorgula?id=${success}`)} className="mt-2 text-sm font-medium underline">
                 Başvuruyu sorgula →
               </button>
+              <BasvuruQrCode basvuruId={success} />
             </div>
           )}
 

@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import MapLocationView from "@/components/MapLocationView";
+import BasvuruBelge from "@/components/BasvuruBelge";
 import type { Basvuru } from "@/lib/db";
 import { getHaritaSikayetById } from "@/lib/harita";
 
@@ -78,6 +80,13 @@ export default function SorgulaPage() {
                 {loading ? "..." : "Sorgula"}
               </button>
             </div>
+            <p className="mt-3 text-sm text-gray-500">
+              Tüm başvurularınızı görmek için{" "}
+              <Link href="/basvuru/gecmis" className="text-primary font-medium hover:underline">
+                Başvuru Geçmişim
+              </Link>
+              {" "}sayfasını kullanın.
+            </p>
           </div>
 
           {error && (
@@ -136,6 +145,7 @@ export default function SorgulaPage() {
                   </div>
                 )}
               </dl>
+              <BasvuruBelge basvuru={basvuru} />
             </div>
           )}
         </div>

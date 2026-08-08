@@ -4,6 +4,13 @@ export const BELEDIYE_ILETISIM = {
   "telefon_santral": "0 (326) 712 3 712"
 } as const;
 
+/** WhatsApp wa.me linki için uluslararası format (90XXXXXXXXXX) */
+export function belediyeWhatsappNumber(): string {
+  const digits = BELEDIYE_ILETISIM.telefon_santral.replace(/\D/g, "");
+  if (digits.startsWith("0")) return `90${digits.slice(1)}`;
+  return `90${digits}`;
+}
+
 export interface MudurlukBilgi {
   mudur: string;
   telefon_dahili: string | null;

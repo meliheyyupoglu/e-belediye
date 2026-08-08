@@ -1,0 +1,12 @@
+{
+  "name": "Dörtyol e-Belediye",
+  "short_name": "e-Belediye",
+  "description": "T.C. Dörtyol Belediyesi vatandaş başvuru ve yönetim sistemi. PNG ikon dosyası henüz eklenmedi; favicon olarak /icon.svg kullanılmaktadır.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#0d6efd",
+  "lang": "tr",
+  "orientation": "portrait-primary",
+  "categories": ["government", "utilities"]
+}

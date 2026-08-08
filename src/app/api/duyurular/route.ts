@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-api";
 import {
   duyuruEkle,
   duyuruGuncelle,
@@ -20,6 +21,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = requireAdmin(request);
+  if (auth) return auth;
+
   try {
     const body = await request.json();
     const { title, summary, content, date, category, href } = body;
@@ -42,6 +46,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const auth = requireAdmin(request);
+  if (auth) return auth;
+
   try {
     const body = await request.json();
     const { id, ...data } = body;
@@ -54,6 +61,9 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const auth = requireAdmin(request);
+  if (auth) return auth;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = parseInt(searchParams.get("id") || "0", 10);

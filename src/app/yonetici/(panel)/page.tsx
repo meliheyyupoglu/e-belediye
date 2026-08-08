@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import AdminNav from "@/components/AdminNav";
 import { DEPARTMANLAR, DURUMLAR } from "@/lib/constants";
+import { getHaritaSikayetById } from "@/lib/harita";
 import type { Basvuru } from "@/lib/db";
 
 export default function YoneticiPage() {
@@ -12,6 +13,8 @@ export default function YoneticiPage() {
   const [secilenId, setSecilenId] = useState<number | null>(null);
   const [durum, setDurum] = useState("");
   const [notlar, setNotlar] = useState("");
+  const [atanan, setAtanan] = useState("");
+  const [icNot, setIcNot] = useState("");
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState("");
 
@@ -34,7 +37,12 @@ export default function YoneticiPage() {
 
   useEffect(() => {
     const b = basvurular.find((x) => x.id === secilenId);
-    if (b) { setDurum(b.durum); setNotlar(b.notlar || ""); }
+    if (b) {
+      setDurum(b.durum);
+      setNotlar(b.notlar || "");
+      setAtanan(b.atanan || "");
+      setIcNot(b.ic_not || "");
+    }
   }, [secilenId, basvurular]);
 
   async function guncelle() {
@@ -42,7 +50,7 @@ export default function YoneticiPage() {
     const res = await fetch(`/api/basvurular/${secilenId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ durum, notlar }),
+      body: JSON.stringify({ durum, notlar, atanan, ic_not: icNot }),
     });
     if (res.ok) { setMsg("Başvuru güncellendi."); yukle(); }
   }
@@ -62,8 +70,11 @@ export default function YoneticiPage() {
           subtitle="Başvuruları görüntüleyin, filtreleyin ve durumlarını güncelleyin."
           breadcrumbs={[{ label: "Yönetici Paneli" }]}
         />
-        <div className="mt-4 flex gap-3">
-          <Link href="/yonetici/cms" className="btn-primary text-sm">CMS - Duyuru Yönetimi</Link>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <AdminNav />
+          <a href="/api/basvurular/export" className="btn-secondary text-sm">
+            CSV Dışa Aktar
+          </a>
         </div>
       </div>
 
@@ -106,7 +117,7 @@ export default function YoneticiPage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    {["ID", "Ad Soyad", "Müdürlük", "Konu", "Durum", "Tarih"].map((h) => (
+                    {["ID", "Ad Soyad", "Müdürlük", "Konu", "Tip", "Adres", "Durum", "Tarih"].map((h) => (
                       <th key={h} className="p-3 font-semibold text-gray-600">{h}</th>
                     ))}
                   </tr>
@@ -122,6 +133,12 @@ export default function YoneticiPage() {
                       <td className="p-3">{b.ad_soyad}</td>
                       <td className="p-3 text-gray-500">{b.departman}</td>
                       <td className="p-3">{b.konu}</td>
+                      <td className="p-3 text-gray-500">
+                        {b.basvuru_tipi
+                          ? getHaritaSikayetById(b.basvuru_tipi)?.label || b.basvuru_tipi
+                          : "—"}
+                      </td>
+                      <td className="p-3 text-gray-500 max-w-[180px] truncate">{b.adres || "—"}</td>
                       <td className="p-3">
                         <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{b.durum}</span>
                       </td>
@@ -143,8 +160,21 @@ export default function YoneticiPage() {
                     </select>
                   </div>
                   <div>
+                    <label className="form-label">Atanan Personel</label>
+                    <input
+                      className="form-input"
+                      value={atanan}
+                      onChange={(e) => setAtanan(e.target.value)}
+                      placeholder="Sorumlu personel adı"
+                    />
+                  </div>
+                  <div>
                     <label className="form-label">Yetkili Notu</label>
                     <textarea className="form-input" rows={3} value={notlar} onChange={(e) => setNotlar(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="form-label">İç Not (yalnızca yönetici)</label>
+                    <textarea className="form-input" rows={2} value={icNot} onChange={(e) => setIcNot(e.target.value)} />
                   </div>
                   <button onClick={guncelle} className="btn-primary">Güncelle</button>
                   {msg && <p className="text-sm text-green-600">{msg}</p>}

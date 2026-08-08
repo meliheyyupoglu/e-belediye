@@ -114,6 +114,21 @@
     height: 100% !important;
     z-index: 0;
   }
+
+  .admin-map .leaflet-container {
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 0;
+  }
+
+  .mahalle-label {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 10px !important;
+    color: #64748b !important;
+    font-weight: 500;
+  }
 }
 
 @layer utilities {

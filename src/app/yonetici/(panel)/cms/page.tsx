@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
+import AdminNav from "@/components/AdminNav";
 import { CATEGORY_LABELS } from "@/lib/announcements";
 
 interface Duyuru {
@@ -59,12 +59,11 @@ export default function CmsPage() {
             { label: "CMS" },
           ]}
         />
+        <div className="mt-4">
+          <AdminNav />
+        </div>
       </div>
       <section className="content-section pt-0 space-y-8">
-        <div className="flex gap-3">
-          <Link href="/yonetici" className="btn-secondary text-sm">← Başvuru Paneli</Link>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <form onSubmit={ekle} className="info-card space-y-4">
             <h2 className="font-semibold">Yeni Duyuru Ekle</h2>

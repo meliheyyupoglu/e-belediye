@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  BELEDIYE_ADI,
   BELEDIYE_SLOGAN,
   NAV_ITEMS,
 } from "@/lib/constants";
 import { BELEDIYE_ILETISIM } from "@/lib/mudurlukler";
 import SearchModal from "@/components/SearchModal";
+import BelediyeLogo from "@/components/BelediyeLogo";
 
 export default function Header() {
   const pathname = usePathname();
@@ -60,14 +60,7 @@ export default function Header() {
       >
         <div className="site-container flex items-center justify-between py-3">
           <Link href="/" className="group">
-            <div>
-              <p className="font-bold text-gray-900 leading-tight text-sm md:text-base">
-                {BELEDIYE_ADI}
-              </p>
-              <p className="text-xs text-gray-500 hidden sm:block">
-                e-Belediye Portalı
-              </p>
-            </div>
+            <BelediyeLogo className="group-hover:opacity-90 transition" />
           </Link>
 
           {/* Desktop nav */}

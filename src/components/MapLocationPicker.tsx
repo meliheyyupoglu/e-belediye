@@ -17,6 +17,7 @@ interface Props {
   onGeocodeLoading?: (loading: boolean) => void;
   mapLabel: string;
   addressFormat: AddressFormat;
+  kesintiTip?: string;
 }
 
 export default function MapLocationPicker(props: Props) {

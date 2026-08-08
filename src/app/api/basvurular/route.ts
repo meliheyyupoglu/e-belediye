@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { basvuruEkle, EMPTY_STATS, getStats, tumBasvurulariGetir } from "@/lib/db";
+import { requireAdmin } from "@/lib/admin-api";
+import { basvuruEkle, caddeSikayetSayisi, EMPTY_STATS, geoBasvurulariGetir, getStats, tumBasvurulariGetir } from "@/lib/db";
 import { sendBasvuruEmail, sendSmsNotification } from "@/lib/email";
 import { getHaritaSikayetById, isInDortyolBounds } from "@/lib/harita";
 import { put } from "@vercel/blob";
@@ -11,6 +12,12 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const departman = searchParams.get("departman") || undefined;
+    if (searchParams.get("geo") === "1") {
+      const auth = requireAdmin(request);
+      if (auth) return auth;
+      const basvurular = await geoBasvurulariGetir();
+      return NextResponse.json(basvurular);
+    }
     if (searchParams.get("stats") === "1") {
       const stats = await getStats().catch(() => EMPTY_STATS);
       return NextResponse.json(stats);
@@ -96,6 +103,9 @@ export async function POST(request: Request) {
       if (lat !== null && lng !== null && !isInDortyolBounds(lat, lng)) {
         return NextResponse.json({ error: "Konum Dörtyol ilçe sınırları dışında." }, { status: 400 });
       }
+      if (basvuru_tipi === "bozuk_yol" && !belge_dosya && !belge_url) {
+        return NextResponse.json({ error: "Bozuk yol bildirimi için fotoğraf yüklemeniz zorunludur." }, { status: 400 });
+      }
     }
 
     const id = await basvuruEkle({
@@ -114,7 +124,18 @@ export async function POST(request: Request) {
       `Dörtyol Belediyesi: Başvurunuz alındı. Takip No: #${id}`
     );
 
-    return NextResponse.json({ id, message: "Başvuru alındı" });
+    let oncelikli = false;
+    if (basvuru_tipi === "bozuk_yol" && cadde_sokak.trim()) {
+      const sayi = await caddeSikayetSayisi(cadde_sokak.trim());
+      oncelikli = sayi >= 5;
+    }
+
+    return NextResponse.json({
+      id,
+      message: "Başvuru alındı",
+      oncelikli,
+      oncelikMesaj: oncelikli ? "Bu cadde/sokak için çok sayıda şikayet var — öncelikli işleme alınacaktır." : undefined,
+    });
   } catch (error) {
     console.error(error);
     const msg = error instanceof Error ? error.message : "Başvuru kaydedilemedi";

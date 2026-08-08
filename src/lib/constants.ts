@@ -3,6 +3,7 @@ export const NAV_ITEMS = [
   { href: "/duyurular", label: "Duyurular" },
   { href: "/mudurlukler", label: "Müdürlüklerimiz" },
   { href: "/baskan-meclis", label: "Başkan & Meclis" },
+  { href: "/randevu", label: "Randevu Al" },
   { href: "/iletisim", label: "İletişim" },
   { href: "/basvuru", label: "Başvuru Yap" },
   { href: "/sorgula", label: "Başvuru Sorgula" },

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MapLocationPicker, { type MapLocation } from "@/components/MapLocationPicker";
+import BasvuruQrCode from "@/components/BasvuruQrCode";
 import { isInDortyolBounds, type HARITA_SIKAYETLERI } from "@/lib/harita";
 
 type SikayetTip = (typeof HARITA_SIKAYETLERI)[number];
@@ -46,9 +47,15 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
       return;
     }
 
-    setLoading(true);
     const form = e.currentTarget;
     const fd = new FormData(form);
+    const file = fd.get("belge") as File | null;
+    if (sikayet.id === "bozuk_yol" && (!file || file.size === 0)) {
+      setError("Bozuk yol bildirimi için fotoğraf yüklemeniz zorunludur.");
+      return;
+    }
+
+    setLoading(true);
 
     fd.set("departman", sikayet.departman);
     fd.set("konu", sikayet.konu);
@@ -87,6 +94,7 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
           <button onClick={() => router.push(`/sorgula?id=${success}`)} className="mt-2 text-sm font-medium underline">
             Başvuruyu sorgula →
           </button>
+          <BasvuruQrCode basvuruId={success} />
         </div>
       )}
 
@@ -101,6 +109,7 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
           onGeocodeLoading={setAdresLoading}
           mapLabel={sikayet.mapLabel}
           addressFormat={sikayet.addressFormat}
+          kesintiTip={sikayet.id === "su_kesintisi" ? "su_kesintisi" : sikayet.id === "elektrik" ? "elektrik" : undefined}
         />
 
         <div>
@@ -155,8 +164,19 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
         </div>
 
         <div>
-          <label className="form-label">Fotoğraf (isteğe bağlı)</label>
-          <input name="belge" type="file" className="form-input" accept=".png,.jpg,.jpeg,.webp" />
+          <label className="form-label">
+            Fotoğraf {sikayet.id === "bozuk_yol" ? "*" : "(isteğe bağlı)"}
+          </label>
+          <input
+            name="belge"
+            type="file"
+            className="form-input"
+            accept=".png,.jpg,.jpeg,.webp"
+            required={sikayet.id === "bozuk_yol"}
+          />
+          {sikayet.id === "bozuk_yol" && (
+            <p className="mt-1 text-xs text-gray-400">Hasarlı yolun fotoğrafını eklemeniz gerekmektedir.</p>
+          )}
         </div>
 
         <input type="hidden" name="departman" value={sikayet.departman} />
