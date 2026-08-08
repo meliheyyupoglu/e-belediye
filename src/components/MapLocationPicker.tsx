@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { AddressFormat } from "@/lib/geocode";
 import type { MapLocation } from "./MapPickerInner";
 
 const MapPickerInner = dynamic(() => import("./MapPickerInner"), {
@@ -14,6 +15,7 @@ interface Props {
   value: MapLocation | null;
   onChange: (loc: MapLocation) => void;
   mapLabel: string;
+  addressFormat: AddressFormat;
 }
 
 export default function MapLocationPicker(props: Props) {

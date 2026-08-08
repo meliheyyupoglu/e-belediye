@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { DORTYOL_CENTER } from "@/lib/harita";
+import type { AddressFormat } from "@/lib/geocode";
 import "leaflet/dist/leaflet.css";
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -17,12 +18,18 @@ export interface MapLocation {
   lat: number;
   lng: number;
   adres?: string;
+  il?: string;
+  ilce?: string;
+  mahalle?: string;
+  caddeSokak?: string;
+  binaNo?: string;
 }
 
 interface Props {
   value: MapLocation | null;
   onChange: (loc: MapLocation) => void;
   mapLabel: string;
+  addressFormat: AddressFormat;
 }
 
 function ClickHandler({ onChange }: { onChange: (loc: MapLocation) => void }) {
@@ -34,28 +41,71 @@ function ClickHandler({ onChange }: { onChange: (loc: MapLocation) => void }) {
   return null;
 }
 
-async function reverseGeocode(lat: number, lng: number): Promise<string> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&accept-language=tr`
-    );
-    if (!res.ok) return "";
-    const data = await res.json();
-    return data.display_name || "";
-  } catch {
-    return "";
-  }
+async function fetchAddress(lat: number, lng: number, format: AddressFormat) {
+  const res = await fetch(
+    `/api/geocode/reverse?lat=${lat}&lng=${lng}&format=${format}`
+  );
+  if (!res.ok) return null;
+  return res.json() as Promise<{
+    il: string;
+    ilce: string;
+    mahalle: string;
+    caddeSokak: string;
+    binaNo: string;
+    formatted: string;
+  }>;
 }
 
-export default function MapPickerInner({ value, onChange, mapLabel }: Props) {
+function AddressDisplay({ location, format }: { location: MapLocation; format: AddressFormat }) {
+  if (format === "detailed") {
+    return (
+      <div className="space-y-0.5">
+        <p>{location.il} {location.ilce}</p>
+        {location.mahalle && <p>{location.mahalle}</p>}
+        {location.caddeSokak && (
+          <p>
+            {location.caddeSokak}
+            {location.binaNo ? `, Bina No ${location.binaNo}` : ""}
+          </p>
+        )}
+        {!location.mahalle && !location.caddeSokak && location.adres && (
+          <p>{location.adres}</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0.5">
+      <p>{location.il || "Hatay"} {location.ilce || "Dörtyol"}</p>
+      {location.mahalle && <p>{location.mahalle}</p>}
+      {location.caddeSokak && <p>{location.caddeSokak}</p>}
+      {!location.mahalle && !location.caddeSokak && location.adres && (
+        <p>{location.adres}</p>
+      )}
+    </div>
+  );
+}
+
+export default function MapPickerInner({ value, onChange, mapLabel, addressFormat }: Props) {
   const [geoLoading, setGeoLoading] = useState(false);
   const [addressLoading, setAddressLoading] = useState(false);
 
   async function handleLocationChange(loc: MapLocation) {
     onChange(loc);
     setAddressLoading(true);
-    const adres = await reverseGeocode(loc.lat, loc.lng);
-    if (adres) onChange({ ...loc, adres });
+    const parsed = await fetchAddress(loc.lat, loc.lng, addressFormat);
+    if (parsed) {
+      onChange({
+        ...loc,
+        adres: parsed.formatted,
+        il: parsed.il,
+        ilce: parsed.ilce,
+        mahalle: parsed.mahalle,
+        caddeSokak: parsed.caddeSokak,
+        binaNo: parsed.binaNo,
+      });
+    }
     setAddressLoading(false);
   }
 
@@ -108,9 +158,15 @@ export default function MapPickerInner({ value, onChange, mapLabel }: Props) {
         Haritaya tıklayarak konum seçin. Dörtyol ilçe sınırları içinde olmalıdır.
       </p>
       {value && (
-        <div className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800">
-          <span className="font-medium">Seçilen konum:</span>{" "}
-          {addressLoading ? "Adres alınıyor..." : value.adres || `${value.lat.toFixed(5)}, ${value.lng.toFixed(5)}`}
+        <div className="mt-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-800">
+          <span className="font-medium block mb-1">Seçilen adres:</span>
+          {addressLoading ? (
+            <span className="text-xs">Adres alınıyor...</span>
+          ) : value.adres || value.mahalle || value.caddeSokak ? (
+            <AddressDisplay location={value} format={addressFormat} />
+          ) : (
+            <span className="text-xs">{value.lat.toFixed(5)}, {value.lng.toFixed(5)}</span>
+          )}
         </div>
       )}
     </div>

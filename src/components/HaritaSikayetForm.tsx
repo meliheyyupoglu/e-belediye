@@ -19,6 +19,13 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
   const [location, setLocation] = useState<MapLocation | null>(null);
   const [caddeSokak, setCaddeSokak] = useState("");
 
+  function handleLocationChange(loc: MapLocation) {
+    setLocation(loc);
+    if (sikayet.showCaddeSokak && loc.caddeSokak) {
+      setCaddeSokak(loc.caddeSokak);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
@@ -87,8 +94,9 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
       <form onSubmit={handleSubmit} className="info-card space-y-5">
         <MapLocationPicker
           value={location}
-          onChange={setLocation}
+          onChange={handleLocationChange}
           mapLabel={sikayet.mapLabel}
+          addressFormat={sikayet.addressFormat}
         />
 
         {sikayet.showCaddeSokak && (
@@ -98,8 +106,13 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
               value={caddeSokak}
               onChange={(e) => setCaddeSokak(e.target.value)}
               className="form-input"
-              placeholder="Örn: İstasyon Caddesi, Atatürk Sokak No:5"
+              placeholder="Haritadan seçildiğinde otomatik dolar veya elle yazabilirsiniz"
             />
+            {location?.mahalle && (
+              <p className="mt-1 text-xs text-gray-500">
+                Mahalle: <span className="font-medium">{location.mahalle}</span>
+              </p>
+            )}
             <p className="mt-1 text-xs text-gray-400">
               Haritadan işaretleyemiyorsanız cadde veya sokak adını yazabilirsiniz.
             </p>
