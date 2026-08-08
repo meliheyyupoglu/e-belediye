@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { basvuruEkle, EMPTY_STATS, getStats, tumBasvurulariGetir } from "@/lib/db";
 import { sendBasvuruEmail, sendSmsNotification } from "@/lib/email";
+import { getHaritaSikayetById, isInDortyolBounds } from "@/lib/harita";
 import { put } from "@vercel/blob";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +29,9 @@ export async function POST(request: Request) {
     let tc_no = "", ad_soyad = "", telefon = "", email = "";
     let departman = "", konu = "", detay = "";
     let belge_dosya = "", belge_url = "";
+    let basvuru_tipi = "", adres = "", cadde_sokak = "";
+    let lat: number | null = null;
+    let lng: number | null = null;
 
     if (contentType.includes("multipart/form-data")) {
       const fd = await request.formData();
@@ -38,6 +42,15 @@ export async function POST(request: Request) {
       departman = String(fd.get("departman") || "");
       konu = String(fd.get("konu") || "");
       detay = String(fd.get("detay") || "");
+      basvuru_tipi = String(fd.get("basvuru_tipi") || "");
+      adres = String(fd.get("adres") || "");
+      cadde_sokak = String(fd.get("cadde_sokak") || "");
+      const latStr = fd.get("lat");
+      const lngStr = fd.get("lng");
+      if (latStr && lngStr) {
+        lat = parseFloat(String(latStr));
+        lng = parseFloat(String(lngStr));
+      }
       const file = fd.get("belge") as File | null;
       if (file && file.size > 0 && process.env.BLOB_READ_WRITE_TOKEN) {
         const blob = await put(`basvurular/${Date.now()}_${file.name}`, file, { access: "public" });
@@ -48,7 +61,14 @@ export async function POST(request: Request) {
       }
     } else {
       const body = await request.json();
-      ({ tc_no, ad_soyad, telefon, email, departman, konu, detay, belge_dosya } = body);
+      ({
+        tc_no, ad_soyad, telefon, email, departman, konu, detay, belge_dosya,
+        basvuru_tipi, adres, cadde_sokak,
+      } = body);
+      if (body.lat != null && body.lng != null) {
+        lat = Number(body.lat);
+        lng = Number(body.lng);
+      }
     }
 
     const telClean = String(telefon).replace(/[\s\-()]/g, "");
@@ -60,10 +80,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Lütfen zorunlu alanları eksiksiz doldurun." }, { status: 400 });
     }
 
+    if (basvuru_tipi) {
+      const tip = getHaritaSikayetById(basvuru_tipi);
+      if (!tip) {
+        return NextResponse.json({ error: "Geçersiz şikayet tipi." }, { status: 400 });
+      }
+      departman = tip.departman;
+      konu = tip.konu;
+      if (tip.requireMap && (lat === null || lng === null || isNaN(lat) || isNaN(lng))) {
+        return NextResponse.json({ error: "Haritadan konum seçmeniz gerekiyor." }, { status: 400 });
+      }
+      if (tip.showCaddeSokak && !cadde_sokak.trim() && (lat === null || lng === null)) {
+        return NextResponse.json({ error: "Haritadan konum seçin veya cadde/sokak adı yazın." }, { status: 400 });
+      }
+      if (lat !== null && lng !== null && !isInDortyolBounds(lat, lng)) {
+        return NextResponse.json({ error: "Konum Dörtyol ilçe sınırları dışında." }, { status: 400 });
+      }
+    }
+
     const id = await basvuruEkle({
       tc_no, ad_soyad: ad_soyad.trim(), telefon: telefon.trim(),
       email: email?.trim(), departman, konu: konu.trim(), detay: detay.trim(),
       belge_dosya, belge_url,
+      basvuru_tipi: basvuru_tipi || undefined,
+      lat, lng, adres: adres.trim(), cadde_sokak: cadde_sokak.trim(),
     });
 
     if (email) {

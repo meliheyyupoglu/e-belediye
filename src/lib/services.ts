@@ -7,6 +7,12 @@ export interface Service {
 
 export const HIZMETLER: Service[] = [
   {
+    title: "Harita ile Şikayet",
+    description: "Su kesintisi, elektrik arızası ve bozuk yol bildirimi — haritadan konum seçin.",
+    href: "/basvuru/harita",
+    icon: "harita",
+  },
+  {
     title: "Online Başvuru",
     description: "Talep, öneri ve şikayetlerinizi ilgili müdürlüğe iletin.",
     href: "/basvuru",

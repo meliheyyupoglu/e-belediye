@@ -79,6 +79,21 @@ export async function initDb(): Promise<boolean> {
     if (!colNames.includes("belge_url")) {
       await db.execute("ALTER TABLE basvurular ADD COLUMN belge_url TEXT DEFAULT ''");
     }
+    if (!colNames.includes("basvuru_tipi")) {
+      await db.execute("ALTER TABLE basvurular ADD COLUMN basvuru_tipi TEXT DEFAULT ''");
+    }
+    if (!colNames.includes("lat")) {
+      await db.execute("ALTER TABLE basvurular ADD COLUMN lat REAL");
+    }
+    if (!colNames.includes("lng")) {
+      await db.execute("ALTER TABLE basvurular ADD COLUMN lng REAL");
+    }
+    if (!colNames.includes("adres")) {
+      await db.execute("ALTER TABLE basvurular ADD COLUMN adres TEXT DEFAULT ''");
+    }
+    if (!colNames.includes("cadde_sokak")) {
+      await db.execute("ALTER TABLE basvurular ADD COLUMN cadde_sokak TEXT DEFAULT ''");
+    }
 
     return true;
   } catch (e) {
@@ -102,6 +117,11 @@ export interface Basvuru {
   belge_dosya: string;
   belge_url?: string;
   tarih: string;
+  basvuru_tipi?: string;
+  lat?: number | null;
+  lng?: number | null;
+  adres?: string;
+  cadde_sokak?: string;
 }
 
 export interface Duyuru {
@@ -137,17 +157,27 @@ export async function basvuruEkle(data: {
   detay: string;
   belge_dosya?: string;
   belge_url?: string;
+  basvuru_tipi?: string;
+  lat?: number | null;
+  lng?: number | null;
+  adres?: string;
+  cadde_sokak?: string;
 }): Promise<number> {
   if (!(await initDb())) throw new Error("Veritabanı yapılandırılmamış. TURSO_DATABASE_URL ayarlayın.");
   const db = getDb()!;
   const tarih = new Date().toISOString().replace("T", " ").slice(0, 19);
   const result = await db.execute({
-    sql: `INSERT INTO basvurular (tc_no, ad_soyad, telefon, email, departman, konu, detay, durum, notlar, belge_dosya, belge_url, tarih)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 'İncelemede', '', ?, ?, ?)`,
+    sql: `INSERT INTO basvurular (
+            tc_no, ad_soyad, telefon, email, departman, konu, detay, durum, notlar,
+            belge_dosya, belge_url, tarih, basvuru_tipi, lat, lng, adres, cadde_sokak
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, 'İncelemede', '', ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       data.tc_no, data.ad_soyad, data.telefon, data.email || "",
       data.departman, data.konu, data.detay,
       data.belge_dosya || "", data.belge_url || "", tarih,
+      data.basvuru_tipi || "",
+      data.lat ?? null, data.lng ?? null,
+      data.adres || "", data.cadde_sokak || "",
     ],
   });
   return Number(result.lastInsertRowid);

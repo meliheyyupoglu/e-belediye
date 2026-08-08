@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
+import MapLocationView from "@/components/MapLocationView";
 import type { Basvuru } from "@/lib/db";
+import { getHaritaSikayetById } from "@/lib/harita";
 
 const DURUM_COLORS: Record<string, string> = {
   "İncelemede": "bg-yellow-100 text-yellow-800",
@@ -104,10 +106,29 @@ export default function SorgulaPage() {
                     <dd className="font-medium text-gray-800">{value}</dd>
                   </div>
                 ))}
+                {basvuru.basvuru_tipi && (
+                  <div>
+                    <dt className="text-gray-400 text-xs mb-0.5">Şikayet Tipi</dt>
+                    <dd className="font-medium text-gray-800">
+                      {getHaritaSikayetById(basvuru.basvuru_tipi)?.label || basvuru.basvuru_tipi}
+                    </dd>
+                  </div>
+                )}
+                {basvuru.cadde_sokak && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-gray-400 text-xs mb-0.5">Cadde / Sokak</dt>
+                    <dd className="font-medium text-gray-800">{basvuru.cadde_sokak}</dd>
+                  </div>
+                )}
                 <div className="sm:col-span-2">
                   <dt className="text-gray-400 text-xs mb-0.5">Detay</dt>
                   <dd className="text-gray-700">{basvuru.detay}</dd>
                 </div>
+                {basvuru.lat != null && basvuru.lng != null && (
+                  <div className="sm:col-span-2">
+                    <MapLocationView lat={basvuru.lat} lng={basvuru.lng} adres={basvuru.adres} />
+                  </div>
+                )}
                 {basvuru.notlar && (
                   <div className="sm:col-span-2 rounded-lg bg-blue-50 p-3">
                     <dt className="text-primary text-xs font-medium mb-0.5">Yetkili Notu</dt>

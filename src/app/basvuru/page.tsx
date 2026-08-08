@@ -51,6 +51,14 @@ export default function BasvuruPage() {
 
       <section className="content-section pt-0">
         <div className="max-w-3xl">
+          <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+            Su kesintisi, elektrik veya bozuk yol şikayeti için{" "}
+            <a href="/basvuru/harita" className="font-semibold underline">
+              harita üzerinden bildirim
+            </a>{" "}
+            yapabilirsiniz.
+          </div>
+
           {success && (
             <div className="mb-6 rounded-xl border border-green-200 bg-green-50 p-5 text-green-800">
               <p className="font-semibold mb-1">Başvurunuz alındı!</p>

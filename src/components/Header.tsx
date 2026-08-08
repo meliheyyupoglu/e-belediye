@@ -59,10 +59,7 @@ export default function Header() {
         }`}
       >
         <div className="site-container flex items-center justify-between py-3">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-white font-bold text-lg shadow-sm group-hover:bg-primary-dark transition">
-              DB
-            </div>
+          <Link href="/" className="group">
             <div>
               <p className="font-bold text-gray-900 leading-tight text-sm md:text-base">
                 {BELEDIYE_ADI}
