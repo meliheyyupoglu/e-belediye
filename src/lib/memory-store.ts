@@ -17,6 +17,24 @@ function init() {
   if (!kesintiler) kesintiler = generateDemoKesintiler();
 }
 
+type BasvuruEkleInput = {
+  tc_no: string;
+  ad_soyad: string;
+  telefon: string;
+  email?: string;
+  departman: string;
+  konu: string;
+  detay: string;
+  belge_dosya?: string;
+  belge_url?: string;
+  basvuru_tipi?: string;
+  lat?: number | null;
+  lng?: number | null;
+  adres?: string;
+  cadde_sokak?: string;
+  durum?: string;
+};
+
 export function memoryBasvurulariGetir(departman?: string): Basvuru[] {
   init();
   let list = [...basvurular!];
@@ -31,11 +49,7 @@ export function memoryBasvuruGetir(id: number): Basvuru | null {
   return basvurular!.find((b) => b.id === id) ?? null;
 }
 
-export function memoryBasvuruEkle(
-  data: Omit<Basvuru, "id" | "durum" | "notlar" | "tarih" | "ic_not" | "atanan"> & {
-    durum?: string;
-  }
-): number {
+export function memoryBasvuruEkle(data: BasvuruEkleInput): number {
   init();
   const id = nextBasvuruId++;
   const tarih = new Date().toISOString().replace("T", " ").slice(0, 19);
