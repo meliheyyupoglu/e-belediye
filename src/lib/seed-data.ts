@@ -1,5 +1,6 @@
 import { DEPARTMANLAR, DURUMLAR } from "./constants";
 import { MAHALLE_NOKTALARI } from "./harita";
+import type { Client } from "@libsql/client/web";
 import type { Basvuru, Randevu, KesintiBolgesi } from "./db";
 
 export const DEMO_MARKER = "demo_seed";
@@ -208,12 +209,9 @@ export function generateDemoKesintiler(): KesintiBolgesi[] {
 }
 
 /** Turso'ya demo veri yazar (tablo boşsa) */
-export async function seedDemoDataTurso(
-  db: { execute: (arg: string | { sql: string; args?: unknown[] }) => Promise<unknown> }
-): Promise<void> {
+export async function seedDemoDataTurso(db: Client): Promise<void> {
   const countRes = await db.execute("SELECT COUNT(*) as c FROM basvurular");
-  const rows = (countRes as { rows: unknown[] }).rows;
-  const total = Number((rows[0] as Record<string, unknown>).c ?? 0);
+  const total = Number(countRes.rows[0]?.c ?? 0);
   if (total > 0) return;
 
   for (const b of generateDemoBasvurular()) {
@@ -232,7 +230,7 @@ export async function seedDemoDataTurso(
   }
 
   const randevuCount = await db.execute("SELECT COUNT(*) as c FROM randevular");
-  const rTotal = Number(((randevuCount as { rows: unknown[] }).rows[0] as Record<string, unknown>).c ?? 0);
+  const rTotal = Number(randevuCount.rows[0]?.c ?? 0);
   if (rTotal === 0) {
     for (const r of generateDemoRandevular()) {
       await db.execute({
