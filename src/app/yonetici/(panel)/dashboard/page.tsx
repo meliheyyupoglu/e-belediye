@@ -13,17 +13,30 @@ interface DashboardStats {
   harita: number;
   randevu: number;
   topMahalle: [string, number][];
-  tipDagilim: { su: number; elektrik: number; yol: number };
+  tipDagilim: { su: number; elektrik: number; yol: number; dilek: number };
+}
+
+interface RandevuRow {
+  id: number;
+  ad_soyad: string;
+  departman: string;
+  konu: string;
+  randevu_tarihi: string;
+  randevu_saati: string;
+  durum: string;
 }
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [randevular, setRandevular] = useState<RandevuRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/admin/stats")
-      .then((r) => r.json())
-      .then(setStats)
+    Promise.all([fetch("/api/admin/stats"), fetch("/api/randevular")])
+      .then(async ([statsRes, randevuRes]) => {
+        setStats(await statsRes.json());
+        setRandevular(await randevuRes.json());
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -88,6 +101,10 @@ export default function DashboardPage() {
                     <span>{getHaritaSikayetById("bozuk_yol")?.label || "Bozuk Yol"}</span>
                     <span className="font-medium">{stats.tipDagilim.yol}</span>
                   </li>
+                  <li className="flex justify-between">
+                    <span>Dilek / Genel Başvuru</span>
+                    <span className="font-medium">{stats.tipDagilim.dilek}</span>
+                  </li>
                 </ul>
               </div>
 
@@ -106,6 +123,35 @@ export default function DashboardPage() {
                   </ul>
                 )}
               </div>
+            </div>
+
+            <div className="info-card overflow-x-auto">
+              <h2 className="font-semibold mb-4">Randevular</h2>
+              {randevular.length === 0 ? (
+                <p className="text-sm text-gray-500">Randevu kaydı yok.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="border-b bg-gray-50">
+                    <tr>
+                      {["Ad Soyad", "Müdürlük", "Konu", "Tarih", "Saat", "Durum"].map((h) => (
+                        <th key={h} className="p-2 text-left font-semibold text-gray-600">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {randevular.slice(0, 20).map((r) => (
+                      <tr key={r.id} className="border-t">
+                        <td className="p-2">{r.ad_soyad}</td>
+                        <td className="p-2 text-gray-600">{r.departman}</td>
+                        <td className="p-2">{r.konu}</td>
+                        <td className="p-2">{r.randevu_tarihi}</td>
+                        <td className="p-2">{r.randevu_saati}</td>
+                        <td className="p-2">{r.durum}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </>
         ) : (

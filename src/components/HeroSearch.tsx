@@ -47,7 +47,7 @@ export default function HeroSearch() {
   }, []);
 
   return (
-    <div ref={wrapRef} className="relative mt-8 max-w-2xl">
+    <div ref={wrapRef} className="relative z-[100] mt-8 max-w-2xl">
       <div className="flex items-center rounded-full bg-white shadow-xl ring-1 ring-black/5">
         <svg
           className="ml-5 h-5 w-5 shrink-0 text-gray-400"
@@ -79,7 +79,7 @@ export default function HeroSearch() {
       </div>
 
       {open && q.length >= 2 && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+        <div className="absolute left-0 right-0 top-full z-[100] mt-2 overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
           {loading && <p className="p-4 text-sm text-gray-400">Aranıyor...</p>}
           {!loading && results.length === 0 && (
             <p className="p-4 text-sm text-gray-400">Sonuç bulunamadı.</p>

@@ -1,5 +1,6 @@
 import { createClient, type Client } from "@libsql/client/web";
 import { SEED_DUYURULAR } from "./announcements";
+import { seedDemoData } from "./seed-data";
 
 let _db: Client | null = null;
 let _initialized = false;
@@ -155,6 +156,8 @@ export async function initDb(): Promise<boolean> {
         });
       }
     }
+
+    await seedDemoData(db);
 
     return true;
   } catch (e) {
@@ -470,6 +473,7 @@ export async function getDashboardStats() {
       su: basvurular.filter((b) => b.basvuru_tipi === "su_kesintisi").length,
       elektrik: basvurular.filter((b) => b.basvuru_tipi === "elektrik").length,
       yol: basvurular.filter((b) => b.basvuru_tipi === "bozuk_yol").length,
+      dilek: basvurular.filter((b) => !b.basvuru_tipi).length,
     },
   };
 }

@@ -162,10 +162,24 @@ export default function HaritaSikayetWorkspace() {
       ? "Konum seçildi, adres alınıyor..."
       : "Dörtyol / Harita üzerinde konum seçin";
 
+  const isFormStep = step === "form" && !success;
+
   return (
-    <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-120px)] min-h-[640px] bg-gray-100">
+    <div
+      className={`flex flex-col bg-gray-100 ${
+        isFormStep
+          ? "min-h-[640px] lg:flex-row lg:h-[calc(100vh-120px)]"
+          : "lg:flex-row lg:h-[calc(100vh-120px)] min-h-[640px]"
+      }`}
+    >
       {/* Sol panel */}
-      <aside className="w-full lg:w-[400px] xl:w-[420px] shrink-0 flex flex-col bg-white border-b lg:border-b-0 lg:border-r border-gray-200 shadow-sm z-10">
+      <aside
+        className={`shrink-0 flex flex-col bg-white border-b lg:border-b-0 lg:border-r border-gray-200 shadow-sm z-10 ${
+          isFormStep
+            ? "w-full lg:w-[58%] xl:w-[62%] order-1"
+            : "w-full lg:w-[400px] xl:w-[420px] order-1"
+        }`}
+      >
         {/* Başlık */}
         <div className="bg-gradient-to-br from-primary to-primary-dark px-5 py-5 text-white">
           <div className="flex items-start gap-3">
@@ -357,7 +371,13 @@ export default function HaritaSikayetWorkspace() {
       </aside>
 
       {/* Harita alanı */}
-      <div className="flex flex-1 flex-col min-h-[480px] lg:min-h-0 lg:h-full">
+      <div
+        className={`flex flex-col min-h-0 ${
+          isFormStep
+            ? "w-full h-[180px] shrink-0 order-2 lg:order-2 lg:w-[42%] lg:h-auto lg:self-stretch lg:max-h-[220px]"
+            : "flex-1 min-h-[480px] lg:min-h-0 lg:h-full order-2"
+        }`}
+      >
         <div className="flex items-center justify-between gap-3 border-b bg-white px-4 py-3 shrink-0">
           <div className="flex items-center gap-2 min-w-0 text-sm">
             <svg className="w-4 h-4 shrink-0 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,14 +405,15 @@ export default function HaritaSikayetWorkspace() {
           </div>
         )}
 
-        <div className="relative flex-1 min-h-[420px] lg:min-h-0">
+        <div className={`relative flex-1 min-h-0 ${isFormStep ? "h-full" : "min-h-[420px]"}`}>
           <MapPickerInner
             value={location}
             onChange={handleLocationChange}
             onGeocodeLoading={setAdresLoading}
             addressFormat={sikayet?.addressFormat ?? "detailed"}
-            fullHeight
-            className="absolute inset-0"
+            fullHeight={!isFormStep}
+            compact={isFormStep}
+            className={isFormStep ? "h-full" : "absolute inset-0"}
           />
         </div>
       </div>

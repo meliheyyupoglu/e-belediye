@@ -41,6 +41,7 @@ interface Props {
   onGeocodeLoading?: (loading: boolean) => void;
   addressFormat?: AddressFormat;
   fullHeight?: boolean;
+  compact?: boolean;
   className?: string;
 }
 
@@ -97,6 +98,7 @@ export default function MapPickerInner({
   onGeocodeLoading,
   addressFormat = "detailed",
   fullHeight = false,
+  compact = false,
   className = "",
 }: Props) {
   const [geoLoading, setGeoLoading] = useState(false);
@@ -145,19 +147,31 @@ export default function MapPickerInner({
     ? [value.lat, value.lng]
     : [DORTYOL_CENTER.lat, DORTYOL_CENTER.lng];
 
-  const wrapperClass = fullHeight
-    ? `map-full ${className}`
-    : `map-picker rounded-xl border border-gray-200 shadow-sm ${className}`;
+  const wrapperClass = compact
+    ? `map-full min-h-[160px] max-h-[200px] ${className}`
+    : fullHeight
+      ? `map-full ${className}`
+      : `map-picker rounded-xl border border-gray-200 shadow-sm ${className}`;
+
+  const mapMinHeight = compact ? 160 : fullHeight ? 420 : 256;
 
   if (!mounted) {
     return (
-      <div className={fullHeight ? "map-full min-h-[420px] bg-gray-100 animate-pulse" : "map-picker bg-gray-100 animate-pulse"} />
+      <div
+        className={
+          compact
+            ? "map-full min-h-[160px] bg-gray-100 animate-pulse"
+            : fullHeight
+              ? "map-full min-h-[420px] bg-gray-100 animate-pulse"
+              : "map-picker bg-gray-100 animate-pulse"
+        }
+      />
     );
   }
 
   return (
-    <div className={`relative ${fullHeight ? "h-full min-h-[420px]" : ""}`}>
-      {fullHeight && (
+    <div className={`relative ${fullHeight || compact ? "h-full min-h-0" : ""}`}>
+      {(fullHeight || compact) && (
         <button
           type="button"
           onClick={locateMe}
@@ -167,7 +181,7 @@ export default function MapPickerInner({
           {geoLoading ? "Konum alınıyor..." : "Konumumu Bul"}
         </button>
       )}
-      {fullHeight && availablePresets.length > 1 && (
+      {fullHeight && availablePresets.length > 1 && !compact && (
         <div className="absolute left-3 bottom-3 z-[1000] flex rounded-lg bg-white p-1 shadow-md ring-1 ring-black/5">
           {availablePresets.map((key) => {
             const cfg = getMapTileConfig(key);
@@ -192,7 +206,7 @@ export default function MapPickerInner({
         <MapContainer
           center={center}
           zoom={value ? 18 : 16}
-          style={{ height: "100%", width: "100%", minHeight: fullHeight ? 420 : 256 }}
+          style={{ height: "100%", width: "100%", minHeight: mapMinHeight }}
           scrollWheelZoom
           zoomControl
         >

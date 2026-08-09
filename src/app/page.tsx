@@ -15,7 +15,7 @@ export default function AnaSayfa() {
       <HomeHero />
 
       {/* İstatistikler */}
-      <section className="content-section -mt-6 relative z-10 pt-4">
+      <section className="content-section -mt-6 relative z-0 pt-4">
         <StatsSection />
       </section>
 

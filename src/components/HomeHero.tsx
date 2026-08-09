@@ -4,7 +4,7 @@ import HeroSearch from "@/components/HeroSearch";
 
 export default function HomeHero() {
   return (
-    <section className="relative min-h-[480px] sm:min-h-[540px] md:min-h-[580px] flex items-center -mt-[108px] pt-[108px]">
+    <section className="relative z-30 min-h-[480px] sm:min-h-[540px] md:min-h-[580px] flex items-center -mt-[108px] pt-[108px] isolate">
       <Image
         src="/hero-dortyol-portakal.png"
         alt="Dörtyol portakal bahçeleri"
