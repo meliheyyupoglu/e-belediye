@@ -1,14 +1,15 @@
-import type { Client } from "@libsql/client/web";
 import { DEPARTMANLAR, DURUMLAR } from "./constants";
 import { MAHALLE_NOKTALARI } from "./harita";
+import type { Basvuru, Randevu, KesintiBolgesi } from "./db";
 
-const DEMO_MARKER = "demo_seed";
+export const DEMO_MARKER = "demo_seed";
 
 const ISIMLER = [
   "Ahmet Yılmaz", "Ayşe Demir", "Mehmet Kaya", "Fatma Çelik", "Mustafa Öztürk",
   "Zeynep Arslan", "Ali Şahin", "Emine Koç", "Hasan Aydın", "Elif Yıldız",
   "Burak Polat", "Selin Acar", "Oğuz Güneş", "Deniz Kara", "Cem Erdoğan",
   "Merve Taş", "Kerem Uçar", "Seda Bulut", "Tolga Akın", "Gizem Tunç",
+  "Hüseyin Çakır", "Esra Yavuz", "Volkan Tekin", "Dilara Koçak",
 ];
 
 const DILEK_KONULARI = [
@@ -22,46 +23,51 @@ const DILEK_KONULARI = [
   "İmar durumu sorgusu",
   "Sokak aydınlatması talebi",
   "Çöp toplama saati değişikliği",
+  "Otopark talebi",
+  "Ağaç budama isteği",
 ];
 
 const DETAY_ORNEKLERI: Record<string, string[]> = {
   su_kesintisi: [
-    "Sabah saatlerinden beri su gelmiyor.",
-    "Ana boru patlaması nedeniyle kesinti var.",
-    "Basınç çok düşük, su akmıyor.",
-    "Mahalle genelinde planlı kesinti duyurulmamış.",
+    "Sabah 06:00'dan beri evimize su gelmiyor, acil müdahale rica ederiz.",
+    "Ana boru patlaması nedeniyle mahallemizde su kesintisi yaşanıyor.",
+    "Su basıncı çok düşük, üst katlara su çıkmıyor.",
+    "Planlı kesinti duyurusu yapılmadan su kesildi.",
+    "Sokak başındaki vanadan sürekli su akıyor, israf oluşuyor.",
+    "Kanalizasyon kokusu su hattına karışıyor olabilir.",
   ],
   elektrik: [
-    "Gece yarısından beri elektrik yok.",
-    "Sokak lambası yanmıyor.",
-    "Trafo arızası var, mahalle etkileniyor.",
-    "Kısa devre nedeniyle sigorta atıyor.",
+    "Gece yarısından beri mahallemizde elektrik yok.",
+    "Sokak lambaları 3 gündür yanmıyor, güvenlik sorunu var.",
+    "Trafo arızası nedeniyle 40 haneyi etkileyen kesinti var.",
+    "Kablo yer altından duman çıkıyor, yangın riski var.",
+    "İş yeri önündeki direk eğilmiş, devrilme tehlikesi.",
+    "Gece aydınlatması yetersiz, kaza olabilir.",
   ],
   bozuk_yol: [
-    "Yolda derin çukur oluştu, araçlar zarar görüyor.",
-    "Asfalt dökülmesi var, trafik yavaşladı.",
-    "Kaldırım taşları kırık, yayalar risk altında.",
-    "Yağmur sonrası yol çamur içinde kaldı.",
+    "İstiklal Caddesi üzerinde 40 cm derinliğinde çukur var.",
+    "Asfalt dökülmesi nedeniyle trafik tek şeritten akıyor.",
+    "Kaldırım taşları kırık, yaşlı vatandaşlar yürüyemiyor.",
+    "Yağmur sonrası yol su birikintisi ile kaplanıyor.",
+    "Okul yolunda çukur var, öğrenciler için tehlikeli.",
+    "Bordür taşları yola kaymış, araç lastiği patlatıyor.",
   ],
   dilek: [
-    "Mahallemize yeşil alan yapılmasını talep ediyorum.",
-    "Toplu taşıma sefer sayısının artırılmasını istiyorum.",
-    "Sokak köpekleri için barınak talebimiz var.",
-    "Belediye hizmetleri hakkında bilgi almak istiyorum.",
+    "Mahallemize çocuk oyun parkı yapılmasını talep ediyoruz.",
+    "Toplu taşıma sefer sayısının artırılmasını istiyoruz.",
+    "Sokak hayvanları için barınak ve mama noktası talebi.",
+    "Belediye hizmetleri hakkında detaylı bilgi almak istiyorum.",
+    "Pazar yerine otopark düzenlemesi yapılmalı.",
+    "Mahalle içi hız kesici kasis talep ediyoruz.",
   ],
 };
-
-function rowGet(row: unknown, key: string): unknown {
-  return (row as Record<string, unknown>)[key];
-}
 
 function randomItem<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function randomTc(seed: number): string {
-  const base = String(10000000000 + (seed * 7919) % 89999999999);
-  return base.slice(0, 11);
+  return String(10000000000 + (seed * 7919) % 89999999999).slice(0, 11);
 }
 
 function randomPhone(seed: number): string {
@@ -91,13 +97,10 @@ function mahalleKoordinati(index: number) {
   };
 }
 
-export async function seedDemoData(db: Client): Promise<void> {
-  const check = await db.execute({
-    sql: "SELECT COUNT(*) as c FROM basvurular WHERE ic_not = ?",
-    args: [DEMO_MARKER],
-  });
-  if (Number(rowGet(check.rows[0], "c") ?? 0) > 0) return;
-
+/** Bellek / demo için başvuru listesi üretir (~72 kayıt) */
+export function generateDemoBasvurular(): Basvuru[] {
+  const list: Basvuru[] = [];
+  let id = 1;
   let seed = 1;
 
   const haritaTipleri = [
@@ -106,89 +109,139 @@ export async function seedDemoData(db: Client): Promise<void> {
     { tip: "bozuk_yol", departman: "Fen İşleri Müdürlüğü", konu: "Bozuk Yol Bildirimi" },
   ] as const;
 
+  const DURUM_DAGILIM: string[] = [
+    ...Array(8).fill("İncelemede"),
+    ...Array(6).fill("Devam Ediyor"),
+    ...Array(4).fill("Çözüldü"),
+  ];
+
   for (const ht of haritaTipleri) {
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < 20; i++) {
       const loc = mahalleKoordinati(seed);
-      const name = ISIMLER[seed % ISIMLER.length];
-      await db.execute({
-        sql: `INSERT INTO basvurular (
-          tc_no, ad_soyad, telefon, email, departman, konu, detay, durum, notlar,
-          belge_dosya, belge_url, tarih, basvuru_tipi, lat, lng, adres, cadde_sokak, ic_not
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', '', '', ?, ?, ?, ?, ?, ?, ?)`,
-        args: [
-          randomTc(seed),
-          name,
-          randomPhone(seed),
-          `vatandas${seed}@ornek.com`,
-          ht.departman,
-          ht.konu,
-          randomItem(DETAY_ORNEKLERI[ht.tip]),
-          randomItem(DURUMLAR),
-          daysAgo((seed % 25) + 1),
-          ht.tip,
-          loc.lat,
-          loc.lng,
-          loc.adres,
-          `${loc.mahalle} Cd.`,
-          DEMO_MARKER,
-        ],
+      list.push({
+        id: id++,
+        tc_no: randomTc(seed),
+        ad_soyad: ISIMLER[seed % ISIMLER.length],
+        telefon: randomPhone(seed),
+        email: `vatandas${seed}@ornek.com`,
+        departman: ht.departman,
+        konu: ht.konu,
+        detay: DETAY_ORNEKLERI[ht.tip][i % DETAY_ORNEKLERI[ht.tip].length],
+        durum: DURUM_DAGILIM[i % DURUM_DAGILIM.length],
+        notlar: i % 5 === 0 ? "Ekip yönlendirildi." : "",
+        belge_dosya: "",
+        belge_url: "",
+        tarih: daysAgo((seed % 28) + 1),
+        basvuru_tipi: ht.tip,
+        lat: loc.lat,
+        lng: loc.lng,
+        adres: loc.adres,
+        cadde_sokak: `${loc.mahalle} Cd.`,
+        atanan: i % 4 === 0 ? "Fen İşleri Ekibi" : "",
+        ic_not: DEMO_MARKER,
       });
       seed++;
     }
   }
 
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 20; i++) {
     const loc = mahalleKoordinati(seed);
-    const name = ISIMLER[seed % ISIMLER.length];
-    const konu = randomItem(DILEK_KONULARI);
-    await db.execute({
-      sql: `INSERT INTO basvurular (
-        tc_no, ad_soyad, telefon, email, departman, konu, detay, durum, notlar,
-        belge_dosya, belge_url, tarih, basvuru_tipi, lat, lng, adres, cadde_sokak, ic_not
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', '', '', ?, '', ?, ?, ?, '', ?)`,
-      args: [
-        randomTc(seed),
-        name,
-        randomPhone(seed),
-        `dilek${seed}@ornek.com`,
-        randomItem(DEPARTMANLAR),
-        konu,
-        randomItem(DETAY_ORNEKLERI.dilek),
-        randomItem(DURUMLAR),
-        daysAgo((seed % 20) + 2),
-        loc.lat,
-        loc.lng,
-        loc.adres,
-        DEMO_MARKER,
-      ],
+    list.push({
+      id: id++,
+      tc_no: randomTc(seed),
+      ad_soyad: ISIMLER[seed % ISIMLER.length],
+      telefon: randomPhone(seed),
+      email: `dilek${seed}@ornek.com`,
+      departman: DEPARTMANLAR[seed % DEPARTMANLAR.length],
+      konu: DILEK_KONULARI[i % DILEK_KONULARI.length],
+      detay: DETAY_ORNEKLERI.dilek[i % DETAY_ORNEKLERI.dilek.length],
+      durum: randomItem(DURUMLAR),
+      notlar: "",
+      belge_dosya: "",
+      belge_url: "",
+      tarih: daysAgo((seed % 22) + 2),
+      basvuru_tipi: "",
+      lat: loc.lat,
+      lng: loc.lng,
+      adres: loc.adres,
+      cadde_sokak: "",
+      atanan: "",
+      ic_not: DEMO_MARKER,
     });
     seed++;
   }
 
-  const randevuCheck = await db.execute({
-    sql: "SELECT COUNT(*) as c FROM randevular WHERE notlar = ?",
-    args: [DEMO_MARKER],
-  });
-  if (Number(rowGet(randevuCheck.rows[0], "c") ?? 0) === 0) {
-    const saatler = ["09:00", "09:30", "10:00", "11:00", "13:30", "14:00", "15:00", "16:00"];
-    for (let i = 0; i < 18; i++) {
-      const name = ISIMLER[i % ISIMLER.length];
+  return list;
+}
+
+export function generateDemoRandevular(): Randevu[] {
+  const saatler = ["09:00", "09:30", "10:00", "11:00", "13:30", "14:00", "15:00", "16:00"];
+  const durumlar = ["Beklemede", "Beklemede", "Beklemede", "Onaylandı", "Tamamlandı", "İptal"];
+  const list: Randevu[] = [];
+
+  for (let i = 0; i < 20; i++) {
+    list.push({
+      id: i + 1,
+      tc_no: randomTc(200 + i),
+      ad_soyad: ISIMLER[i % ISIMLER.length],
+      telefon: randomPhone(200 + i),
+      email: `randevu${i}@ornek.com`,
+      departman: DEPARTMANLAR[i % DEPARTMANLAR.length],
+      konu: i % 2 === 0 ? "Başvuru görüşmesi" : "Bilgi alma randevusu",
+      randevu_tarihi: daysFromNow((i % 14) - 2),
+      randevu_saati: saatler[i % saatler.length],
+      durum: durumlar[i % durumlar.length],
+      notlar: DEMO_MARKER,
+      olusturma: daysAgo(i % 12),
+    });
+  }
+
+  return list;
+}
+
+export function generateDemoKesintiler(): KesintiBolgesi[] {
+  return [
+    { id: 1, tip: "su_kesintisi", mahalle: "Numune Evler", aciklama: "Planlı su kesintisi - bakım", lat: 36.8395, lng: 36.218, aktif: 1 },
+    { id: 2, tip: "su_kesintisi", mahalle: "Yeni Camii", aciklama: "Ana hat onarımı", lat: 36.841, lng: 36.214, aktif: 1 },
+    { id: 3, tip: "elektrik", mahalle: "Altınçağ", aciklama: "Trafo bakımı", lat: 36.835, lng: 36.222, aktif: 1 },
+  ];
+}
+
+/** Turso'ya demo veri yazar (tablo boşsa) */
+export async function seedDemoDataTurso(
+  db: { execute: (arg: string | { sql: string; args?: unknown[] }) => Promise<unknown> }
+): Promise<void> {
+  const countRes = await db.execute("SELECT COUNT(*) as c FROM basvurular");
+  const rows = (countRes as { rows: unknown[] }).rows;
+  const total = Number((rows[0] as Record<string, unknown>).c ?? 0);
+  if (total > 0) return;
+
+  for (const b of generateDemoBasvurular()) {
+    await db.execute({
+      sql: `INSERT INTO basvurular (
+        tc_no, ad_soyad, telefon, email, departman, konu, detay, durum, notlar,
+        belge_dosya, belge_url, tarih, basvuru_tipi, lat, lng, adres, cadde_sokak, ic_not
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        b.tc_no, b.ad_soyad, b.telefon, b.email || "", b.departman, b.konu, b.detay,
+        b.durum, b.notlar, b.belge_dosya, b.belge_url || "", b.tarih,
+        b.basvuru_tipi || "", b.lat ?? null, b.lng ?? null,
+        b.adres || "", b.cadde_sokak || "", b.ic_not || DEMO_MARKER,
+      ],
+    });
+  }
+
+  const randevuCount = await db.execute("SELECT COUNT(*) as c FROM randevular");
+  const rTotal = Number(((randevuCount as { rows: unknown[] }).rows[0] as Record<string, unknown>).c ?? 0);
+  if (rTotal === 0) {
+    for (const r of generateDemoRandevular()) {
       await db.execute({
         sql: `INSERT INTO randevular (
           tc_no, ad_soyad, telefon, email, departman, konu, randevu_tarihi, randevu_saati, durum, notlar, olusturma
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
-          randomTc(100 + i),
-          name,
-          randomPhone(100 + i),
-          `randevu${i}@ornek.com`,
-          randomItem(DEPARTMANLAR),
-          i % 2 === 0 ? "Başvuru görüşmesi" : "Bilgi alma randevusu",
-          daysFromNow((i % 14) - 3),
-          randomItem(saatler),
-          randomItem(["Beklemede", "Onaylandı", "Tamamlandı", "İptal"]),
-          DEMO_MARKER,
-          daysAgo(i % 10),
+          r.tc_no, r.ad_soyad, r.telefon, r.email || "", r.departman, r.konu,
+          r.randevu_tarihi, r.randevu_saati, r.durum, r.notlar, r.olusturma,
         ],
       });
     }

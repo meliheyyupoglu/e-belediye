@@ -1,6 +1,17 @@
 import { createClient, type Client } from "@libsql/client/web";
 import { SEED_DUYURULAR } from "./announcements";
-import { seedDemoData } from "./seed-data";
+import {
+  memoryBasvuruEkle,
+  memoryBasvuruGecmisi,
+  memoryBasvuruGetir,
+  memoryBasvuruGuncelle,
+  memoryBasvurulariGetir,
+  memoryCaddeSikayetSayisi,
+  memoryKesintileriGetir,
+  memoryRandevuEkle,
+  memoryRandevulariGetir,
+} from "./memory-store";
+import { seedDemoDataTurso } from "./seed-data";
 
 let _db: Client | null = null;
 let _initialized = false;
@@ -33,12 +44,16 @@ function getDb(): Client | null {
   return _db;
 }
 
+function useMemory(): boolean {
+  return !getDb();
+}
+
 export async function initDb(): Promise<boolean> {
-  if (_initialized) return isDbConfigured() && !_initFailed;
+  if (_initialized) return true;
   _initialized = true;
 
   const db = getDb();
-  if (!db) return false;
+  if (!db) return true;
 
   try {
     await db.execute(`CREATE TABLE IF NOT EXISTS basvurular (
@@ -157,13 +172,13 @@ export async function initDb(): Promise<boolean> {
       }
     }
 
-    await seedDemoData(db);
+    await seedDemoDataTurso(db);
 
     return true;
   } catch (e) {
     console.error("DB init hatası:", e);
     _initFailed = true;
-    return false;
+    return true;
   }
 }
 
@@ -265,7 +280,8 @@ export async function basvuruEkle(data: {
   adres?: string;
   cadde_sokak?: string;
 }): Promise<number> {
-  if (!(await initDb())) throw new Error("Veritabanı yapılandırılmamış. TURSO_DATABASE_URL ayarlayın.");
+  await initDb();
+  if (useMemory()) return memoryBasvuruEkle(data);
   const db = getDb()!;
   const tarih = new Date().toISOString().replace("T", " ").slice(0, 19);
   const result = await db.execute({
@@ -286,7 +302,8 @@ export async function basvuruEkle(data: {
 }
 
 export async function tumBasvurulariGetir(departman?: string): Promise<Basvuru[]> {
-  if (!(await initDb())) return [];
+  await initDb();
+  if (useMemory()) return memoryBasvurulariGetir(departman);
   const db = getDb()!;
   if (departman && departman !== "Tümü") {
     const r = await db.execute({
@@ -300,7 +317,8 @@ export async function tumBasvurulariGetir(departman?: string): Promise<Basvuru[]
 }
 
 export async function basvuruSorgulaId(id: number): Promise<Basvuru | null> {
-  if (!(await initDb())) return null;
+  await initDb();
+  if (useMemory()) return memoryBasvuruGetir(id);
   const db = getDb()!;
   const r = await db.execute({ sql: "SELECT * FROM basvurular WHERE id = ?", args: [id] });
   if (r.rows.length === 0) return null;
@@ -314,7 +332,8 @@ export async function basvuruDurumGuncelle(
   atanan?: string,
   ic_not?: string
 ): Promise<boolean> {
-  if (!(await initDb())) return false;
+  await initDb();
+  if (useMemory()) return memoryBasvuruGuncelle(id, durum, notlar, atanan, ic_not);
   const db = getDb()!;
   const r = await db.execute({
     sql: "UPDATE basvurular SET durum = ?, notlar = ?, atanan = COALESCE(?, atanan), ic_not = COALESCE(?, ic_not) WHERE id = ?",
@@ -324,7 +343,8 @@ export async function basvuruDurumGuncelle(
 }
 
 export async function basvuruGecmisiGetir(tc_no: string, telefon: string): Promise<Basvuru[]> {
-  if (!(await initDb())) return [];
+  await initDb();
+  if (useMemory()) return memoryBasvuruGecmisi(tc_no, telefon);
   const db = getDb()!;
   const tel = telefon.replace(/[\s\-()]/g, "");
   const r = await db.execute({
@@ -340,7 +360,8 @@ export async function geoBasvurulariGetir(): Promise<Basvuru[]> {
 }
 
 export async function caddeSikayetSayisi(cadde: string): Promise<number> {
-  if (!(await initDb())) return 0;
+  await initDb();
+  if (useMemory()) return memoryCaddeSikayetSayisi(cadde);
   const db = getDb()!;
   const r = await db.execute({
     sql: "SELECT COUNT(*) as c FROM basvurular WHERE basvuru_tipi = 'bozuk_yol' AND (cadde_sokak LIKE ? OR adres LIKE ?)",
@@ -390,7 +411,8 @@ export async function otpDogrula(hedef: string, kod: string, tip: string): Promi
 }
 
 export async function randevuEkle(data: Omit<Randevu, "id" | "durum" | "notlar" | "olusturma">): Promise<number> {
-  if (!(await initDb())) throw new Error("Veritabanı yapılandırılmamış.");
+  await initDb();
+  if (useMemory()) return memoryRandevuEkle(data);
   const db = getDb()!;
   const olusturma = new Date().toISOString().replace("T", " ").slice(0, 19);
   const r = await db.execute({
@@ -402,14 +424,16 @@ export async function randevuEkle(data: Omit<Randevu, "id" | "durum" | "notlar" 
 }
 
 export async function tumRandevulariGetir(): Promise<Randevu[]> {
-  if (!(await initDb())) return [];
+  await initDb();
+  if (useMemory()) return memoryRandevulariGetir();
   const db = getDb()!;
   const r = await db.execute("SELECT * FROM randevular ORDER BY randevu_tarihi DESC, randevu_saati DESC");
   return r.rows as unknown as Randevu[];
 }
 
 export async function kesintiBolgeleriGetir(tip?: string): Promise<KesintiBolgesi[]> {
-  if (!(await initDb())) return [];
+  await initDb();
+  if (useMemory()) return memoryKesintileriGetir(tip);
   const db = getDb()!;
   if (tip) {
     const r = await db.execute({ sql: "SELECT * FROM kesinti_bolgeleri WHERE aktif = 1 AND tip = ?", args: [tip] });
