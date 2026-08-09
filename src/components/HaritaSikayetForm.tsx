@@ -109,7 +109,6 @@ export default function HaritaSikayetForm({ sikayet }: Props) {
           onGeocodeLoading={setAdresLoading}
           mapLabel={sikayet.mapLabel}
           addressFormat={sikayet.addressFormat}
-          kesintiTip={sikayet.id === "su_kesintisi" ? "su_kesintisi" : sikayet.id === "elektrik" ? "elektrik" : undefined}
         />
 
         <div>
