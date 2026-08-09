@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { DORTYOL_CENTER } from "@/lib/harita";
-import { getMapTileConfig } from "@/lib/map-tiles";
+import { getAvailablePresets, getMapTileConfig, type MapTilePreset } from "@/lib/map-tiles";
 import type { AddressFormat } from "@/lib/geocode";
 import "leaflet/dist/leaflet.css";
 
@@ -73,7 +73,7 @@ function MapResizeFix() {
 function FlyToMarker({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
-    map.flyTo([lat, lng], 17, { duration: 0.6 });
+    map.flyTo([lat, lng], 18, { duration: 0.6 });
   }, [lat, lng, map]);
   return null;
 }
@@ -101,7 +101,9 @@ export default function MapPickerInner({
 }: Props) {
   const [geoLoading, setGeoLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const tiles = useMemo(() => getMapTileConfig(), []);
+  const [tilePreset, setTilePreset] = useState<MapTilePreset>("osm");
+  const tiles = useMemo(() => getMapTileConfig(tilePreset), [tilePreset]);
+  const availablePresets = useMemo(() => getAvailablePresets(), []);
 
   useEffect(() => {
     setMounted(true);
@@ -165,18 +167,40 @@ export default function MapPickerInner({
           {geoLoading ? "Konum alınıyor..." : "Konumumu Bul"}
         </button>
       )}
+      {fullHeight && availablePresets.length > 1 && (
+        <div className="absolute left-3 bottom-3 z-[1000] flex rounded-lg bg-white p-1 shadow-md ring-1 ring-black/5">
+          {availablePresets.map((key) => {
+            const cfg = getMapTileConfig(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setTilePreset(key)}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition ${
+                  tilePreset === key
+                    ? "bg-primary text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {cfg.label ?? key}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <div className={wrapperClass}>
         <MapContainer
           center={center}
-          zoom={value ? 17 : 15}
+          zoom={value ? 18 : 16}
           style={{ height: "100%", width: "100%", minHeight: fullHeight ? 420 : 256 }}
           scrollWheelZoom
           zoomControl
         >
           <TileLayer
+            key={tilePreset}
             attribution={tiles.attribution}
             url={tiles.url}
-            maxZoom={tiles.maxZoom ?? 20}
+            maxZoom={tiles.maxZoom ?? 19}
             subdomains={tiles.subdomains}
           />
           <MapResizeFix />

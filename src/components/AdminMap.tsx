@@ -33,7 +33,7 @@ export default function AdminMap() {
   const [basvurular, setBasvurular] = useState<Basvuru[]>([]);
   const [kesintiler, setKesintiler] = useState<KesintiBolgesi[]>([]);
   const [loading, setLoading] = useState(true);
-  const tiles = useMemo(() => getMapTileConfig(), []);
+  const tiles = useMemo(() => getMapTileConfig("osm"), []);
 
   useEffect(() => {
     async function yukle() {
