@@ -36,8 +36,11 @@ export function getMapTileConfig(): MapTileConfig {
   };
 }
 
-export const MAP_TILE_FALLBACK: MapTileConfig = {
-  url: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
-  attribution: '&copy; OpenStreetMap DE',
-  maxZoom: 19,
-};
+/** Yedek karo — birincil katman yüklenmezse */
+export function getMapTileFallback(): MapTileConfig {
+  return {
+    url: "https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  };
+}

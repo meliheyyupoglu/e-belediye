@@ -113,10 +113,18 @@
     @apply relative isolate overflow-hidden z-0 h-64 sm:h-72;
   }
 
-  .map-picker .leaflet-container {
+  .map-picker .leaflet-container,
+  .map-full .leaflet-container {
     width: 100% !important;
     height: 100% !important;
+    min-height: 400px;
     z-index: 0;
+  }
+
+  .map-full {
+    @apply relative isolate overflow-hidden z-0 w-full;
+    height: 100%;
+    min-height: 420px;
   }
 
   .admin-map .leaflet-container {

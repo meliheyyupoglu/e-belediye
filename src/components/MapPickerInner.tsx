@@ -56,8 +56,16 @@ function ClickHandler({ onChange }: { onChange: (loc: MapLocation) => void }) {
 function MapResizeFix() {
   const map = useMap();
   useEffect(() => {
-    const t = setTimeout(() => map.invalidateSize(), 200);
-    return () => clearTimeout(t);
+    const fix = () => map.invalidateSize({ animate: false });
+    fix();
+    const t1 = setTimeout(fix, 100);
+    const t2 = setTimeout(fix, 400);
+    window.addEventListener("resize", fix);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener("resize", fix);
+    };
   }, [map]);
   return null;
 }
@@ -92,7 +100,12 @@ export default function MapPickerInner({
   className = "",
 }: Props) {
   const [geoLoading, setGeoLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const tiles = useMemo(() => getMapTileConfig(), []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   async function handleLocationChange(loc: MapLocation) {
     onChange(loc);
@@ -130,10 +143,18 @@ export default function MapPickerInner({
     ? [value.lat, value.lng]
     : [DORTYOL_CENTER.lat, DORTYOL_CENTER.lng];
 
-  const heightClass = fullHeight ? "h-full min-h-[360px]" : "map-picker";
+  const wrapperClass = fullHeight
+    ? `map-full ${className}`
+    : `map-picker rounded-xl border border-gray-200 shadow-sm ${className}`;
+
+  if (!mounted) {
+    return (
+      <div className={fullHeight ? "map-full min-h-[420px] bg-gray-100 animate-pulse" : "map-picker bg-gray-100 animate-pulse"} />
+    );
+  }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${fullHeight ? "h-full min-h-[420px]" : ""}`}>
       {fullHeight && (
         <button
           type="button"
@@ -144,11 +165,11 @@ export default function MapPickerInner({
           {geoLoading ? "Konum alınıyor..." : "Konumumu Bul"}
         </button>
       )}
-      <div className={`${heightClass} overflow-hidden ${fullHeight ? "" : "rounded-xl border border-gray-200 shadow-sm"}`}>
+      <div className={wrapperClass}>
         <MapContainer
           center={center}
           zoom={value ? 17 : 15}
-          className="h-full w-full"
+          style={{ height: "100%", width: "100%", minHeight: fullHeight ? 420 : 256 }}
           scrollWheelZoom
           zoomControl
         >

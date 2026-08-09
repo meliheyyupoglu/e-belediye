@@ -163,7 +163,7 @@ export default function HaritaSikayetWorkspace() {
       : "Dörtyol / Harita üzerinde konum seçin";
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-120px)] lg:min-h-[calc(100vh-100px)] bg-gray-100">
+    <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-120px)] min-h-[640px] bg-gray-100">
       {/* Sol panel */}
       <aside className="w-full lg:w-[400px] xl:w-[420px] shrink-0 flex flex-col bg-white border-b lg:border-b-0 lg:border-r border-gray-200 shadow-sm z-10">
         {/* Başlık */}
@@ -357,7 +357,7 @@ export default function HaritaSikayetWorkspace() {
       </aside>
 
       {/* Harita alanı */}
-      <div className="flex-1 flex flex-col min-h-[420px] lg:min-h-0">
+      <div className="flex flex-1 flex-col min-h-[480px] lg:min-h-0 lg:h-full">
         <div className="flex items-center justify-between gap-3 border-b bg-white px-4 py-3 shrink-0">
           <div className="flex items-center gap-2 min-w-0 text-sm">
             <svg className="w-4 h-4 shrink-0 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,13 +385,14 @@ export default function HaritaSikayetWorkspace() {
           </div>
         )}
 
-        <div className="flex-1 relative">
+        <div className="relative flex-1 min-h-[420px] lg:min-h-0">
           <MapPickerInner
             value={location}
             onChange={handleLocationChange}
             onGeocodeLoading={setAdresLoading}
             addressFormat={sikayet?.addressFormat ?? "detailed"}
             fullHeight
+            className="absolute inset-0"
           />
         </div>
       </div>
