@@ -10,7 +10,7 @@ interface SearchResult {
   snippet: string;
 }
 
-export default function SearchModal() {
+export default function SearchModal({ overlay = false }: { overlay?: boolean }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -50,7 +50,11 @@ export default function SearchModal() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center justify-center gap-1.5 p-2.5 sm:px-2 sm:py-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg hover:border-primary hover:text-primary transition min-h-[44px] min-w-[44px] sm:min-w-0"
+        className={
+          overlay
+            ? "flex items-center justify-center rounded-full p-2.5 text-white/90 transition hover:bg-white/10 min-h-[44px] min-w-[44px]"
+            : "flex items-center justify-center gap-1.5 p-2.5 sm:px-2 sm:py-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg hover:border-primary hover:text-primary transition min-h-[44px] min-w-[44px] sm:min-w-0"
+        }
         aria-label="Ara"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

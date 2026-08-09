@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import { DORTYOL_CENTER } from "@/lib/harita";
 import { getHaritaSikayetById } from "@/lib/harita";
+import { getMapTileConfig } from "@/lib/map-tiles";
 import type { Basvuru, KesintiBolgesi } from "@/lib/db";
 import "leaflet/dist/leaflet.css";
 
@@ -32,6 +33,7 @@ export default function AdminMap() {
   const [basvurular, setBasvurular] = useState<Basvuru[]>([]);
   const [kesintiler, setKesintiler] = useState<KesintiBolgesi[]>([]);
   const [loading, setLoading] = useState(true);
+  const tiles = useMemo(() => getMapTileConfig(), []);
 
   useEffect(() => {
     async function yukle() {
@@ -72,8 +74,10 @@ export default function AdminMap() {
           scrollWheelZoom
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution={tiles.attribution}
+            url={tiles.url}
+            maxZoom={tiles.maxZoom ?? 20}
+            subdomains={tiles.subdomains}
           />
           {kesintiler.map((k) => (
             <Circle

@@ -8,9 +8,22 @@ function getSecret(): string {
   return process.env.ADMIN_SECRET || process.env.ADMIN_PASSWORD || "dortyol-ebelediye-secret";
 }
 
+const DEMO_ADMIN_USERNAME = "admin123";
+const DEMO_ADMIN_PASSWORD = "admin123";
+
+export function verifyAdminCredentials(username: string, password: string): boolean {
+  const u = username.trim();
+  const p = password;
+  if (u === DEMO_ADMIN_USERNAME && p === DEMO_ADMIN_PASSWORD) return true;
+  const envPass = process.env.ADMIN_PASSWORD;
+  if (envPass && p === envPass) {
+    return u === DEMO_ADMIN_USERNAME || u === "admin" || u === "";
+  }
+  return false;
+}
+
 export function verifyPassword(password: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD || "dortyol2024";
-  return password === expected;
+  return password === DEMO_ADMIN_PASSWORD || password === process.env.ADMIN_PASSWORD;
 }
 
 export function createSessionToken(): string {

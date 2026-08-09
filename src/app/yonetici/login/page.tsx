@@ -6,6 +6,7 @@ import PageHeader from "@/components/PageHeader";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,13 +18,13 @@ export default function AdminLoginPage() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ username, password }),
     });
     if (res.ok) {
       router.push("/yonetici");
       router.refresh();
     } else {
-      setError("Geçersiz şifre.");
+      setError("Geçersiz kullanıcı adı veya şifre.");
     }
     setLoading(false);
   }
@@ -36,14 +37,24 @@ export default function AdminLoginPage() {
       <section className="content-section pt-0">
         <form onSubmit={handleSubmit} className="info-card max-w-md space-y-4">
           <div>
-            <label className="form-label">Yönetici Şifresi</label>
+            <label className="form-label">Kullanıcı Adı</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="form-input"
+              required
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="form-label">Şifre</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="form-input"
               required
-              autoFocus
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}

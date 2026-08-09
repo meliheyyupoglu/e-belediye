@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { COOKIE_NAME, MAX_AGE, createSessionToken, verifyPassword } from "@/lib/auth";
+import { COOKIE_NAME, MAX_AGE, createSessionToken, verifyAdminCredentials } from "@/lib/auth";
 
 export async function POST(request: Request) {
-  const { password } = await request.json();
-  if (!verifyPassword(password)) {
-    return NextResponse.json({ error: "Geçersiz şifre" }, { status: 401 });
+  const { username = "", password = "" } = await request.json();
+  if (!verifyAdminCredentials(username, password)) {
+    return NextResponse.json({ error: "Geçersiz kullanıcı adı veya şifre" }, { status: 401 });
   }
   const token = createSessionToken();
   const res = NextResponse.json({ ok: true });

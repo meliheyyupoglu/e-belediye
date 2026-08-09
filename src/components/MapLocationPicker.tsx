@@ -15,8 +15,10 @@ interface Props {
   value: MapLocation | null;
   onChange: (loc: MapLocation) => void;
   onGeocodeLoading?: (loading: boolean) => void;
-  mapLabel: string;
-  addressFormat: AddressFormat;
+  mapLabel?: string;
+  addressFormat?: AddressFormat;
+  fullHeight?: boolean;
+  className?: string;
 }
 
 export default function MapLocationPicker(props: Props) {

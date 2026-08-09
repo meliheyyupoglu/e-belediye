@@ -1,8 +1,9 @@
 import Link from "next/link";
 import AnnouncementsSection from "@/components/AnnouncementsSection";
+import HomeHero from "@/components/HomeHero";
 import ServicesGrid from "@/components/ServicesGrid";
 import StatsSection from "@/components/StatsSection";
-import { BELEDIYE_ADI, BELEDIYE_SLOGAN, SISTEM_ADI, DEPARTMANLAR } from "@/lib/constants";
+import { DEPARTMANLAR } from "@/lib/constants";
 import { MUDURLUK_BILGILERI } from "@/lib/mudurlukler";
 import { MUDURLUK_TO_SLUG } from "@/lib/slug";
 
@@ -11,40 +12,10 @@ export default function AnaSayfa() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="hero-section">
-        <div className="site-container relative py-12 sm:py-16 md:py-24">
-          <div className="max-w-2xl">
-            <p className="mb-2 sm:mb-3 text-xs sm:text-sm font-medium uppercase tracking-widest text-blue-200">
-              {BELEDIYE_SLOGAN}
-            </p>
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold leading-tight mb-3 sm:mb-4">
-              {BELEDIYE_ADI}
-            </h1>
-            <p className="text-base sm:text-lg text-blue-100 mb-6 sm:mb-8 leading-relaxed">
-              {SISTEM_ADI}. Talep, öneri ve şikayetlerinizi online iletin,
-              başvurunuzu anlık takip edin.
-            </p>
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-3">
-              <Link href="/basvuru" className="btn-primary text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
-                Başvuru Yap
-              </Link>
-              <Link href="/basvuru/harita" className="btn-outline-white text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
-                Harita ile Şikayet
-              </Link>
-              <Link href="/randevu" className="btn-outline-white text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
-                Randevu Al
-              </Link>
-              <Link href="/sorgula" className="btn-outline-white text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
-                Başvuru Sorgula
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeHero />
 
       {/* İstatistikler */}
-      <section className="content-section -mt-8 relative z-10">
+      <section className="content-section -mt-6 relative z-10 pt-4">
         <StatsSection />
       </section>
 

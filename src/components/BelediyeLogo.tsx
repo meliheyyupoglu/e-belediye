@@ -4,6 +4,7 @@ interface BelediyeLogoProps {
   className?: string;
   showText?: boolean;
   size?: "sm" | "md" | "lg";
+  variant?: "dark" | "light";
 }
 
 const SIZES = {
@@ -16,8 +17,11 @@ export default function BelediyeLogo({
   className = "",
   showText = true,
   size = "md",
+  variant = "dark",
 }: BelediyeLogoProps) {
   const s = SIZES[size];
+  const titleClass = variant === "light" ? "text-white" : "text-gray-900";
+  const subtitleClass = variant === "light" ? "text-white/80" : "text-gray-500";
 
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
@@ -59,10 +63,10 @@ export default function BelediyeLogo({
 
       {showText && (
         <div className="min-w-0">
-          <p className={`font-bold text-gray-900 leading-tight ${s.title}`}>
+          <p className={`font-bold leading-tight ${titleClass} ${s.title}`}>
             {BELEDIYE_ADI}
           </p>
-          <p className={`text-gray-500 ${s.subtitle}`}>
+          <p className={`${subtitleClass} ${s.subtitle}`}>
             e-Belediye
           </p>
         </div>

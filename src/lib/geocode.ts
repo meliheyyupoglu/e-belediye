@@ -72,11 +72,67 @@ export async function reverseGeocodeAddress(
   lng: number,
   mode: AddressFormat
 ): Promise<ParsedAddress | null> {
+  const photon = await reverseGeocodePhoton(lat, lng, mode);
+  if (photon) return photon;
+  return reverseGeocodeNominatim(lat, lng, mode);
+}
+
+async function reverseGeocodePhoton(
+  lat: number,
+  lng: number,
+  mode: AddressFormat
+): Promise<ParsedAddress | null> {
+  try {
+    const url = new URL("https://photon.komoot.io/reverse");
+    url.searchParams.set("lat", String(lat));
+    url.searchParams.set("lon", String(lng));
+    url.searchParams.set("lang", "tr");
+
+    const res = await fetch(url.toString(), { next: { revalidate: 0 } });
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as {
+      features?: Array<{
+        properties?: {
+          street?: string;
+          housenumber?: string;
+          district?: string;
+          suburb?: string;
+          neighbourhood?: string;
+          city?: string;
+          town?: string;
+          county?: string;
+          state?: string;
+          name?: string;
+        };
+      }>;
+    };
+
+    const p = data.features?.[0]?.properties;
+    if (!p) return null;
+
+    const il = p.state || "Hatay";
+    const ilce = p.city || p.town || p.county || "Dörtyol";
+    const mahalle = normalizeMahalle(p.district || p.suburb || p.neighbourhood || "");
+    const caddeSokak = p.street || p.name || "";
+    const binaNo = p.housenumber || "";
+
+    return formatAddress({ il, ilce, mahalle, caddeSokak, binaNo }, mode);
+  } catch {
+    return null;
+  }
+}
+
+async function reverseGeocodeNominatim(
+  lat: number,
+  lng: number,
+  mode: AddressFormat
+): Promise<ParsedAddress | null> {
   const url = new URL("https://nominatim.openstreetmap.org/reverse");
   url.searchParams.set("format", "json");
   url.searchParams.set("lat", String(lat));
   url.searchParams.set("lon", String(lng));
-  url.searchParams.set("zoom", mode === "detailed" ? "18" : "17");
+  url.searchParams.set("zoom", mode === "detailed" ? "19" : "18");
   url.searchParams.set("addressdetails", "1");
   url.searchParams.set("accept-language", "tr");
 
