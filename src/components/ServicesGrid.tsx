@@ -58,7 +58,7 @@ export default function ServicesGrid() {
   return (
     <section>
       <h2 className="section-title mb-5">e-Hizmetlerimiz</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
         {HIZMETLER.map((hizmet) => (
           <Link
             key={hizmet.href}

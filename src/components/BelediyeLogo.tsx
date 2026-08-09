@@ -62,8 +62,8 @@ export default function BelediyeLogo({
           <p className={`font-bold text-gray-900 leading-tight ${s.title}`}>
             {BELEDIYE_ADI}
           </p>
-          <p className={`text-gray-500 hidden sm:block ${s.subtitle}`}>
-            e-Belediye Portalı
+          <p className={`text-gray-500 ${s.subtitle}`}>
+            e-Belediye
           </p>
         </div>
       )}

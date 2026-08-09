@@ -66,17 +66,17 @@ export default function SorgulaPage() {
         <div className="max-w-2xl">
           <div className="info-card mb-6">
             <label className="form-label">Başvuru Numarası</label>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
               <input
                 type="number"
                 min={1}
                 value={id}
                 onChange={(e) => setId(e.target.value)}
-                className="form-input"
+                className="form-input flex-1"
                 placeholder="Örn: 1"
                 onKeyDown={(e) => e.key === "Enter" && sorgula()}
               />
-              <button onClick={() => sorgula()} className="btn-primary whitespace-nowrap px-6" disabled={loading}>
+              <button onClick={() => sorgula()} className="btn-primary w-full sm:w-auto whitespace-nowrap px-6" disabled={loading}>
                 {loading ? "..." : "Sorgula"}
               </button>
             </div>

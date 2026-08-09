@@ -17,7 +17,7 @@ export default function PageHeader({
   breadcrumbs,
 }: PageHeaderProps) {
   return (
-    <div className="page-header mb-8">
+    <div className="page-header mb-6 sm:mb-8">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav className="mb-3 flex flex-wrap items-center gap-1 text-sm text-blue-200">
           <Link href="/" className="hover:text-white transition">
@@ -37,9 +37,9 @@ export default function PageHeader({
           ))}
         </nav>
       )}
-      <h1 className="text-2xl md:text-3xl font-bold text-white">{title}</h1>
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{title}</h1>
       {subtitle && (
-        <p className="mt-2 text-blue-100 max-w-2xl">{subtitle}</p>
+        <p className="mt-2 text-sm sm:text-base text-blue-100 max-w-2xl">{subtitle}</p>
       )}
     </div>
   );

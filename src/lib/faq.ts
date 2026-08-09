@@ -119,13 +119,14 @@ export const FAQ_ITEMS: FaqItem[] = [
       "13 müdürlüğümüz hakkında görev, müdür ve iletişim bilgileri için 'Müdürlüklerimiz' sayfasını ziyaret edebilirsiniz.",
   },
   {
-    keywords: ["başkan", "baskan", "belediye başkanı", "belediye baskani", "ömer"],
+    keywords: ["başkan", "baskan", "belediye başkanı", "belediye baskani", "bahadır", "bahadir", "amaç", "amac"],
     answer:
-      "Belediye Başkanımız Ömer Şenol Beltir. Başkan ve Meclis üyeleri hakkında bilgi için 'Başkan & Meclis' sayfasına bakabilirsiniz.",
+      "Belediye Başkanımız Dr. Bahadır Amaç. Başkan ve Meclis üyeleri hakkında bilgi için 'Başkan & Meclis' sayfasına bakabilirsiniz.",
   },
   {
     keywords: ["meclis", "belediye meclisi", "üye", "parti"],
-    answer: "Belediye Meclisi üyeleri ve parti bilgileri 'Başkan & Meclis' sayfasında yer almaktadır.",
+    answer:
+      "Dörtyol Belediye Meclisi 30 üyeden oluşmaktadır. Meclis üyeleri ve parti bilgileri 'Başkan & Meclis' sayfasında yer almaktadır.",
   },
   {
     keywords: ["duyuru", "haber", "etkinlik", "duyurular"],

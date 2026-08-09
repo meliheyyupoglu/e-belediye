@@ -13,29 +13,29 @@ export default function AnaSayfa() {
     <>
       {/* Hero */}
       <section className="hero-section">
-        <div className="site-container relative py-16 md:py-24">
+        <div className="site-container relative py-12 sm:py-16 md:py-24">
           <div className="max-w-2xl">
-            <p className="mb-3 text-sm font-medium uppercase tracking-widest text-blue-200">
+            <p className="mb-2 sm:mb-3 text-xs sm:text-sm font-medium uppercase tracking-widest text-blue-200">
               {BELEDIYE_SLOGAN}
             </p>
-            <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold leading-tight mb-3 sm:mb-4">
               {BELEDIYE_ADI}
             </h1>
-            <p className="text-lg text-blue-100 mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-blue-100 mb-6 sm:mb-8 leading-relaxed">
               {SISTEM_ADI}. Talep, öneri ve şikayetlerinizi online iletin,
               başvurunuzu anlık takip edin.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/basvuru" className="btn-primary text-base px-6 py-3">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 sm:gap-3">
+              <Link href="/basvuru" className="btn-primary text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
                 Başvuru Yap
               </Link>
-              <Link href="/basvuru/harita" className="btn-outline-white text-base px-6 py-3">
+              <Link href="/basvuru/harita" className="btn-outline-white text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
                 Harita ile Şikayet
               </Link>
-              <Link href="/randevu" className="btn-outline-white text-base px-6 py-3">
+              <Link href="/randevu" className="btn-outline-white text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
                 Randevu Al
               </Link>
-              <Link href="/sorgula" className="btn-outline-white text-base px-6 py-3">
+              <Link href="/sorgula" className="btn-outline-white text-sm sm:text-base px-5 sm:px-6 py-3 w-full sm:w-auto">
                 Başvuru Sorgula
               </Link>
             </div>
@@ -90,20 +90,20 @@ export default function AnaSayfa() {
       </section>
 
       {/* CTA */}
-      <section className="content-section pb-16">
+      <section className="content-section pb-12 sm:pb-16">
         <div className="cta-section">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3">
             Size Nasıl Yardımcı Olabiliriz?
           </h2>
-          <p className="text-blue-100 mb-6 max-w-lg mx-auto">
+          <p className="text-sm sm:text-base text-blue-100 mb-5 sm:mb-6 max-w-lg mx-auto">
             Belediyemize ulaşmak için online başvuru formunu doldurabilir veya
             444 7 712 numaralı hattımızı arayabilirsiniz.
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/basvuru" className="bg-white text-primary font-semibold px-6 py-3 rounded-lg hover:bg-blue-50 transition shadow">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-2.5 sm:gap-3">
+            <Link href="/basvuru" className="bg-white text-primary font-semibold px-6 py-3 rounded-lg hover:bg-blue-50 transition shadow w-full sm:w-auto">
               Online Başvuru
             </Link>
-            <a href="tel:4447712" className="btn-outline-white px-6 py-3">
+            <a href="tel:4447712" className="btn-outline-white px-6 py-3 w-full sm:w-auto">
               444 7 712
             </a>
           </div>
