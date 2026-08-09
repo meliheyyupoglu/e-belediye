@@ -42,6 +42,7 @@ interface Props {
   addressFormat?: AddressFormat;
   fullHeight?: boolean;
   compact?: boolean;
+  readOnly?: boolean;
   className?: string;
 }
 
@@ -99,6 +100,7 @@ export default function MapPickerInner({
   addressFormat = "detailed",
   fullHeight = false,
   compact = false,
+  readOnly = false,
   className = "",
 }: Props) {
   const [geoLoading, setGeoLoading] = useState(false);
@@ -171,7 +173,7 @@ export default function MapPickerInner({
 
   return (
     <div className={`relative ${fullHeight || compact ? "h-full min-h-0" : ""}`}>
-      {(fullHeight || compact) && (
+      {(fullHeight || compact) && !readOnly && (
         <button
           type="button"
           onClick={locateMe}
@@ -218,7 +220,7 @@ export default function MapPickerInner({
             subdomains={tiles.subdomains}
           />
           <MapResizeFix />
-          <ClickHandler onChange={handleLocationChange} />
+          {!readOnly && <ClickHandler onChange={handleLocationChange} />}
           {value && (
             <>
               <FlyToMarker lat={value.lat} lng={value.lng} />
