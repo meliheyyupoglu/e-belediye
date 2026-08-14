@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import AppProviders from "@/components/AppProviders";
+import ThemeScript from "@/components/ThemeScript";
 import { BELEDIYE_ADI, SISTEM_ADI } from "@/lib/constants";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
@@ -39,6 +40,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
         <AppProviders>
           <Header />

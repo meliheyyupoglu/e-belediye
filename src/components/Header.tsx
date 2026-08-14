@@ -125,7 +125,7 @@ export default function Header() {
                 ))}
               </nav>
               <SearchModal overlay={overlayMode} />
-              <DarkModeToggle overlay={overlayMode} />
+              <DarkModeToggle overlay={overlayMode} showLabel />
               <NotificationBell overlay={overlayMode} />
               <Link
                 href="/kayit"
@@ -154,7 +154,7 @@ export default function Header() {
 
             {/* Mobile */}
             <div className="flex lg:hidden items-center gap-0.5">
-              <DarkModeToggle overlay={overlayMode} />
+              <DarkModeToggle overlay={overlayMode} showLabel />
               <NotificationBell overlay={overlayMode} />
               <Link
                 href="/giris"

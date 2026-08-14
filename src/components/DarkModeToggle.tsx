@@ -2,20 +2,29 @@
 
 import { useTheme } from "@/components/ThemeProvider";
 
-export default function DarkModeToggle({ overlay = false }: { overlay?: boolean }) {
+export default function DarkModeToggle({
+  overlay = false,
+  showLabel = false,
+}: {
+  overlay?: boolean;
+  showLabel?: boolean;
+}) {
   const { theme, toggleTheme } = useTheme();
+  const label = theme === "dark" ? "Açık Mod" : "Karanlık Mod";
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className={`rounded-full p-2.5 transition ${
+      className={`inline-flex items-center gap-1.5 rounded-full transition ${
+        showLabel ? "px-3 py-2 text-xs font-medium" : "p-2.5"
+      } ${
         overlay
           ? "text-white hover:bg-white/10"
           : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       }`}
       aria-label={theme === "dark" ? "Açık moda geç" : "Karanlık moda geç"}
-      title={theme === "dark" ? "Açık mod" : "Karanlık mod"}
+      title={label}
     >
       {theme === "dark" ? (
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,6 +35,7 @@ export default function DarkModeToggle({ overlay = false }: { overlay?: boolean 
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
         </svg>
       )}
+      {showLabel && <span className="hidden xl:inline">{label}</span>}
     </button>
   );
 }
