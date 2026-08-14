@@ -10,6 +10,12 @@ import {
   memoryKesintileriGetir,
   memoryRandevuEkle,
   memoryRandevulariGetir,
+  memoryKullaniciEkle,
+  memoryKullaniciGetirByTc,
+  memoryKullaniciGetirById,
+  memoryBildirimEkle,
+  memoryBildirimleriGetir,
+  memoryBildirimOkundu,
 } from "./memory-store";
 import { seedDemoDataTurso } from "./seed-data";
 
@@ -139,6 +145,16 @@ export async function initDb(): Promise<boolean> {
     await db.execute(`CREATE TABLE IF NOT EXISTS abonelikler (
       id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, tarih TEXT NOT NULL
     )`);
+    await db.execute(`CREATE TABLE IF NOT EXISTS kullanicilar (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, tc_no TEXT NOT NULL UNIQUE, ad_soyad TEXT NOT NULL,
+      telefon TEXT NOT NULL, email TEXT NOT NULL, sifre_hash TEXT NOT NULL,
+      olusturma TEXT NOT NULL, aktif INTEGER DEFAULT 1
+    )`);
+    await db.execute(`CREATE TABLE IF NOT EXISTS bildirimler (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, kullanici_id INTEGER NOT NULL,
+      baslik TEXT NOT NULL, mesaj TEXT NOT NULL, tip TEXT DEFAULT 'genel',
+      okundu INTEGER DEFAULT 0, tarih TEXT NOT NULL
+    )`);
 
     const kesintiCount = await db.execute("SELECT COUNT(*) as c FROM kesinti_bolgeleri");
     if (Number(rowGet(kesintiCount.rows[0], "c") ?? 0) === 0) {
@@ -262,6 +278,27 @@ export interface Icerik {
   active: number;
 }
 
+export interface Kullanici {
+  id: number;
+  tc_no: string;
+  ad_soyad: string;
+  telefon: string;
+  email: string;
+  sifre_hash: string;
+  olusturma: string;
+  aktif: number;
+}
+
+export interface Bildirim {
+  id: number;
+  kullanici_id: number;
+  baslik: string;
+  mesaj: string;
+  tip: string;
+  okundu: number;
+  tarih: string;
+}
+
 const EMPTY_STATS = { toplam: 0, incelemede: 0, devam: 0, cozuldu: 0 };
 
 export async function basvuruEkle(data: {
@@ -333,12 +370,19 @@ export async function basvuruDurumGuncelle(
   ic_not?: string
 ): Promise<boolean> {
   await initDb();
-  if (useMemory()) return memoryBasvuruGuncelle(id, durum, notlar, atanan, ic_not);
+  if (useMemory()) {
+    const ok = memoryBasvuruGuncelle(id, durum, notlar, atanan, ic_not);
+    if (ok) await bildirimEkleBasvuruDurum(id, durum);
+    return ok;
+  }
   const db = getDb()!;
   const r = await db.execute({
     sql: "UPDATE basvurular SET durum = ?, notlar = ?, atanan = COALESCE(?, atanan), ic_not = COALESCE(?, ic_not) WHERE id = ?",
     args: [durum, notlar, atanan || null, ic_not || null, id],
   });
+  if (r.rowsAffected > 0) {
+    await bildirimEkleBasvuruDurum(id, durum);
+  }
   return r.rowsAffected > 0;
 }
 
@@ -605,6 +649,96 @@ export async function tumIletisimMesajlariGetir(): Promise<IletisimMesaji[]> {
   const db = getDb()!;
   const r = await db.execute("SELECT * FROM iletisim_mesajlari ORDER BY tarih DESC");
   return r.rows as unknown as IletisimMesaji[];
+}
+
+export async function kullaniciKaydet(data: {
+  tc_no: string;
+  ad_soyad: string;
+  telefon: string;
+  email: string;
+  sifre_hash: string;
+}): Promise<number> {
+  await initDb();
+  const olusturma = new Date().toISOString().replace("T", " ").slice(0, 19);
+  if (useMemory()) return memoryKullaniciEkle({ ...data, olusturma });
+  const db = getDb()!;
+  const r = await db.execute({
+    sql: `INSERT INTO kullanicilar (tc_no, ad_soyad, telefon, email, sifre_hash, olusturma, aktif)
+          VALUES (?, ?, ?, ?, ?, ?, 1)`,
+    args: [data.tc_no, data.ad_soyad, data.telefon, data.email, data.sifre_hash, olusturma],
+  });
+  return Number(r.lastInsertRowid);
+}
+
+export async function kullaniciGetirByTc(tc_no: string): Promise<Kullanici | null> {
+  await initDb();
+  if (useMemory()) return memoryKullaniciGetirByTc(tc_no);
+  const db = getDb()!;
+  const r = await db.execute({ sql: "SELECT * FROM kullanicilar WHERE tc_no = ? AND aktif = 1", args: [tc_no] });
+  if (r.rows.length === 0) return null;
+  return r.rows[0] as unknown as Kullanici;
+}
+
+export async function kullaniciGetirById(id: number): Promise<Kullanici | null> {
+  await initDb();
+  if (useMemory()) return memoryKullaniciGetirById(id);
+  const db = getDb()!;
+  const r = await db.execute({ sql: "SELECT * FROM kullanicilar WHERE id = ? AND aktif = 1", args: [id] });
+  if (r.rows.length === 0) return null;
+  return r.rows[0] as unknown as Kullanici;
+}
+
+export async function bildirimEkle(data: {
+  kullanici_id: number;
+  baslik: string;
+  mesaj: string;
+  tip?: string;
+}): Promise<number> {
+  await initDb();
+  const tarih = new Date().toISOString().replace("T", " ").slice(0, 19);
+  if (useMemory()) return memoryBildirimEkle({ ...data, tarih });
+  const db = getDb()!;
+  const r = await db.execute({
+    sql: `INSERT INTO bildirimler (kullanici_id, baslik, mesaj, tip, okundu, tarih)
+          VALUES (?, ?, ?, ?, 0, ?)`,
+    args: [data.kullanici_id, data.baslik, data.mesaj, data.tip || "genel", tarih],
+  });
+  return Number(r.lastInsertRowid);
+}
+
+export async function bildirimleriGetir(kullaniciId: number): Promise<Bildirim[]> {
+  await initDb();
+  if (useMemory()) return memoryBildirimleriGetir(kullaniciId);
+  const db = getDb()!;
+  const r = await db.execute({
+    sql: "SELECT * FROM bildirimler WHERE kullanici_id = ? ORDER BY tarih DESC LIMIT 50",
+    args: [kullaniciId],
+  });
+  return r.rows as unknown as Bildirim[];
+}
+
+export async function bildirimOkundu(id: number, kullaniciId: number): Promise<boolean> {
+  await initDb();
+  if (useMemory()) return memoryBildirimOkundu(id, kullaniciId);
+  const db = getDb()!;
+  const r = await db.execute({
+    sql: "UPDATE bildirimler SET okundu = 1 WHERE id = ? AND kullanici_id = ?",
+    args: [id, kullaniciId],
+  });
+  return r.rowsAffected > 0;
+}
+
+export async function bildirimEkleBasvuruDurum(basvuruId: number, yeniDurum: string): Promise<void> {
+  const basvuru = await basvuruSorgulaId(basvuruId);
+  if (!basvuru) return;
+  const kullanici = await kullaniciGetirByTc(basvuru.tc_no);
+  if (!kullanici) return;
+  await bildirimEkle({
+    kullanici_id: kullanici.id,
+    baslik: "Başvuru durumu güncellendi",
+    mesaj: `#${basvuruId} numaralı başvurunuz "${yeniDurum}" durumuna alındı.`,
+    tip: "basvuru",
+  });
 }
 
 export { EMPTY_STATS };

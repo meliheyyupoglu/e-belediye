@@ -10,13 +10,13 @@ import {
 import { BELEDIYE_ILETISIM } from "@/lib/mudurlukler";
 import SearchModal from "@/components/SearchModal";
 import BelediyeLogo from "@/components/BelediyeLogo";
-import AdminLoginModal from "@/components/AdminLoginModal";
+import DarkModeToggle from "@/components/DarkModeToggle";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   const overlayMode = isHome && !scrolled;
@@ -67,7 +67,7 @@ export default function Header() {
         className={`z-50 transition-all duration-300 ${
           overlayMode
             ? "absolute inset-x-0 top-0"
-            : "sticky top-0 shadow-sm border-b border-gray-200 bg-white"
+            : "sticky top-0 shadow-sm border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900"
         }`}
       >
         {/* Üst bilgi çubuğu */}
@@ -102,7 +102,7 @@ export default function Header() {
         </div>
 
         {/* Ana navigasyon */}
-        <div className={`transition-colors ${overlayMode ? "bg-transparent" : "bg-white"}`}>
+        <div className={`transition-colors ${overlayMode ? "bg-transparent" : "bg-white dark:bg-gray-900"}`}>
           <div className="site-container flex items-center justify-between py-2.5 sm:py-3">
             <Link href="/" className="group min-w-0">
               <BelediyeLogo
@@ -125,36 +125,48 @@ export default function Header() {
                 ))}
               </nav>
               <SearchModal overlay={overlayMode} />
-              <button
-                type="button"
-                onClick={() => setLoginOpen(true)}
+              <DarkModeToggle overlay={overlayMode} />
+              <NotificationBell overlay={overlayMode} />
+              <Link
+                href="/kayit"
                 className={
                   overlayMode
-                    ? "ml-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary shadow-md transition hover:bg-blue-50"
-                    : "ml-2 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-primary hover:text-primary"
+                    ? "ml-1 hidden sm:inline-flex items-center rounded-full border border-white/60 px-3 py-2 text-xs font-semibold text-white hover:bg-white/10"
+                    : "ml-1 hidden sm:inline-flex items-center rounded-full border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:border-primary hover:text-primary dark:border-gray-600 dark:text-gray-200"
+                }
+              >
+                Kayıt Ol
+              </Link>
+              <Link
+                href="/giris"
+                className={
+                  overlayMode
+                    ? "ml-1 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-primary shadow-md transition hover:bg-blue-50"
+                    : "ml-1 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-primary hover:text-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                 }
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 Giriş Yap
-              </button>
+              </Link>
             </div>
 
             {/* Mobile */}
-            <div className="flex lg:hidden items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setLoginOpen(true)}
+            <div className="flex lg:hidden items-center gap-0.5">
+              <DarkModeToggle overlay={overlayMode} />
+              <NotificationBell overlay={overlayMode} />
+              <Link
+                href="/giris"
                 className={`rounded-full p-2.5 transition ${
-                  overlayMode ? "text-white hover:bg-white/10" : "text-gray-600 hover:bg-gray-100"
+                  overlayMode ? "text-white hover:bg-white/10" : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                 }`}
                 aria-label="Giriş Yap"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-              </button>
+              </Link>
               <SearchModal overlay={overlayMode} />
               <button
                 className={`p-2.5 rounded-lg transition ${
@@ -185,7 +197,7 @@ export default function Header() {
               aria-hidden
             />
             <nav
-              className="fixed inset-y-0 right-0 z-50 w-[min(100vw-3rem,320px)] bg-white shadow-2xl lg:hidden flex flex-col animate-slide-in-right"
+              className="fixed inset-y-0 right-0 z-50 w-[min(100vw-3rem,320px)] bg-white dark:bg-gray-900 shadow-2xl lg:hidden flex flex-col animate-slide-in-right"
               aria-label="Mobil menü"
             >
               <div className="flex items-center justify-between border-b px-4 py-3">
@@ -202,11 +214,11 @@ export default function Header() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 p-4 border-b bg-gray-50">
-                <Link href="/basvuru" className="btn-primary text-sm py-3" onClick={() => setMobileOpen(false)}>
-                  Başvuru Yap
+                <Link href="/kayit" className="btn-secondary text-sm py-3" onClick={() => setMobileOpen(false)}>
+                  Kayıt Ol
                 </Link>
-                <Link href="/sorgula" className="btn-secondary text-sm py-3" onClick={() => setMobileOpen(false)}>
-                  Sorgula
+                <Link href="/giris" className="btn-primary text-sm py-3" onClick={() => setMobileOpen(false)}>
+                  Giriş Yap
                 </Link>
               </div>
 
@@ -225,16 +237,15 @@ export default function Header() {
                     {item.label}
                   </Link>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileOpen(false);
-                    setLoginOpen(true);
-                  }}
-                  className="flex w-full items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-gray-700 active:bg-gray-50"
-                >
-                  Giriş Yap
-                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 p-4 border-b bg-gray-50 dark:bg-gray-800">
+                <Link href="/basvuru" className="btn-primary text-sm py-3" onClick={() => setMobileOpen(false)}>
+                  Başvuru
+                </Link>
+                <Link href="/sorgula" className="btn-secondary text-sm py-3" onClick={() => setMobileOpen(false)}>
+                  Sorgula
+                </Link>
               </div>
 
               <div className="border-t p-4 pb-safe bg-gray-50">
@@ -249,8 +260,6 @@ export default function Header() {
           </>
         )}
       </header>
-
-      <AdminLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </>
   );
 }

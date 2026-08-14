@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
+import AppProviders from "@/components/AppProviders";
 import { BELEDIYE_ADI, SISTEM_ADI } from "@/lib/constants";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
@@ -37,12 +38,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
-      <body className="flex min-h-screen flex-col bg-gray-50">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <ChatWidget />
+    <html lang="tr" suppressHydrationWarning>
+      <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
+        <AppProviders>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <ChatWidget />
+        </AppProviders>
       </body>
     </html>
   );

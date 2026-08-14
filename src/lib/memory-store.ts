@@ -10,6 +10,10 @@ let randevular: Randevu[] | null = null;
 let kesintiler: KesintiBolgesi[] | null = null;
 let nextBasvuruId = 2000;
 let nextRandevuId = 2000;
+let nextKullaniciId = 1;
+let nextBildirimId = 1;
+let kullanicilar: import("./db").Kullanici[] = [];
+let bildirimler: import("./db").Bildirim[] = [];
 
 function init() {
   if (!basvurular) basvurular = generateDemoBasvurular();
@@ -133,4 +137,56 @@ export function memoryCaddeSikayetSayisi(cadde: string): number {
       b.basvuru_tipi === "bozuk_yol" &&
       (b.cadde_sokak?.includes(cadde) || b.adres?.includes(cadde))
   ).length;
+}
+
+export function memoryKullaniciEkle(data: {
+  tc_no: string;
+  ad_soyad: string;
+  telefon: string;
+  email: string;
+  sifre_hash: string;
+  olusturma: string;
+}): number {
+  const id = nextKullaniciId++;
+  kullanicilar.push({ ...data, id, aktif: 1 });
+  return id;
+}
+
+export function memoryKullaniciGetirByTc(tc_no: string) {
+  return kullanicilar.find((k) => k.tc_no === tc_no && k.aktif === 1) ?? null;
+}
+
+export function memoryKullaniciGetirById(id: number) {
+  return kullanicilar.find((k) => k.id === id && k.aktif === 1) ?? null;
+}
+
+export function memoryBildirimEkle(data: {
+  kullanici_id: number;
+  baslik: string;
+  mesaj: string;
+  tip?: string;
+  tarih: string;
+}): number {
+  const id = nextBildirimId++;
+  bildirimler.unshift({
+    id,
+    kullanici_id: data.kullanici_id,
+    baslik: data.baslik,
+    mesaj: data.mesaj,
+    tip: data.tip || "genel",
+    okundu: 0,
+    tarih: data.tarih,
+  });
+  return id;
+}
+
+export function memoryBildirimleriGetir(kullaniciId: number) {
+  return bildirimler.filter((b) => b.kullanici_id === kullaniciId);
+}
+
+export function memoryBildirimOkundu(id: number, kullaniciId: number): boolean {
+  const b = bildirimler.find((x) => x.id === id && x.kullanici_id === kullaniciId);
+  if (!b) return false;
+  b.okundu = 1;
+  return true;
 }
