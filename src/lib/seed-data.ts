@@ -208,6 +208,17 @@ export function generateDemoKesintiler(): KesintiBolgesi[] {
   ];
 }
 
+/** Yönetici harita ekranı için örnek şikayet ve kesinti verisi */
+export function getAdminMapDemoData(): { basvurular: Basvuru[]; kesintiler: KesintiBolgesi[] } {
+  const basvurular = generateDemoBasvurular().filter(
+    (b) => b.basvuru_tipi && b.lat != null && b.lng != null
+  );
+  return {
+    basvurular,
+    kesintiler: generateDemoKesintiler(),
+  };
+}
+
 /** Turso'ya demo veri yazar (tablo boşsa) */
 export async function seedDemoDataTurso(db: Client): Promise<void> {
   const countRes = await db.execute("SELECT COUNT(*) as c FROM basvurular");

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import { DORTYOL_CENTER } from "@/lib/harita";
 import { getHaritaSikayetById } from "@/lib/harita";
 import { getMapTileConfig } from "@/lib/map-tiles";
+import { getAdminMapDemoData } from "@/lib/seed-data";
 import type { Basvuru, KesintiBolgesi } from "@/lib/db";
 import "leaflet/dist/leaflet.css";
 
@@ -17,6 +18,7 @@ const TIP_COLORS: Record<string, string> = {
 
 const KESINTI_COLORS: Record<string, string> = {
   su: "#3b82f6",
+  su_kesintisi: "#3b82f6",
   elektrik: "#eab308",
 };
 
@@ -29,24 +31,78 @@ function makeIcon(color: string) {
   });
 }
 
+function kesintiEtiketi(tip: string) {
+  if (tip === "su" || tip === "su_kesintisi") return "Su kesintisi";
+  return "Elektrik kesintisi";
+}
+
+function MapResizeFix() {
+  const map = useMap();
+  useEffect(() => {
+    const fix = () => map.invalidateSize({ animate: false });
+    fix();
+    const t1 = setTimeout(fix, 100);
+    const t2 = setTimeout(fix, 400);
+    window.addEventListener("resize", fix);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      window.removeEventListener("resize", fix);
+    };
+  }, [map]);
+  return null;
+}
+
 export default function AdminMap() {
-  const [basvurular, setBasvurular] = useState<Basvuru[]>([]);
-  const [kesintiler, setKesintiler] = useState<KesintiBolgesi[]>([]);
+  const demo = useMemo(() => getAdminMapDemoData(), []);
+  const [basvurular, setBasvurular] = useState<Basvuru[]>(demo.basvurular);
+  const [kesintiler, setKesintiler] = useState<KesintiBolgesi[]>(demo.kesintiler);
+  const [demoMod, setDemoMod] = useState(true);
   const [loading, setLoading] = useState(true);
-  const tiles = useMemo(() => getMapTileConfig("osm"), []);
+  const tiles = useMemo(() => getMapTileConfig("carto"), []);
 
   useEffect(() => {
     async function yukle() {
-      const [bRes, kRes] = await Promise.all([
-        fetch("/api/basvurular?geo=1"),
-        fetch("/api/kesinti"),
-      ]);
-      setBasvurular(await bRes.json());
-      setKesintiler(await kRes.json());
-      setLoading(false);
+      try {
+        const [bRes, kRes] = await Promise.all([
+          fetch("/api/basvurular?geo=1", { credentials: "include" }),
+          fetch("/api/kesinti"),
+        ]);
+
+        let yeniBasvurular = demo.basvurular;
+        let yeniKesintiler = demo.kesintiler;
+        let canli = false;
+
+        if (bRes.ok) {
+          const data = await bRes.json();
+          if (Array.isArray(data) && data.length > 0) {
+            yeniBasvurular = data;
+            canli = true;
+          }
+        }
+
+        if (kRes.ok) {
+          const data = await kRes.json();
+          if (Array.isArray(data) && data.length > 0) {
+            yeniKesintiler = data;
+          }
+        }
+
+        setBasvurular(yeniBasvurular);
+        setKesintiler(yeniKesintiler);
+        setDemoMod(!canli);
+      } catch {
+        setBasvurular(demo.basvurular);
+        setKesintiler(demo.kesintiler);
+        setDemoMod(true);
+      } finally {
+        setLoading(false);
+      }
     }
     yukle();
-  }, []);
+  }, [demo]);
+
+  const haritaBasvurular = basvurular.filter((b) => b.lat != null && b.lng != null);
 
   if (loading) {
     return <div className="h-[480px] rounded-xl bg-gray-100 animate-pulse border border-gray-200" />;
@@ -54,6 +110,11 @@ export default function AdminMap() {
 
   return (
     <div>
+      {demoMod && (
+        <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Örnek şikayet verileri gösteriliyor ({haritaBasvurular.length} kayıt, {kesintiler.length} kesinti bölgesi).
+        </p>
+      )}
       <div className="flex flex-wrap gap-4 mb-3 text-xs text-gray-600">
         {Object.entries(TIP_COLORS).map(([tip, color]) => (
           <span key={tip} className="flex items-center gap-1.5">
@@ -79,6 +140,7 @@ export default function AdminMap() {
             maxZoom={tiles.maxZoom ?? 20}
             subdomains={tiles.subdomains}
           />
+          <MapResizeFix />
           {kesintiler.map((k) => (
             <Circle
               key={`k-${k.id}`}
@@ -94,22 +156,24 @@ export default function AdminMap() {
               <Popup>
                 <strong>{k.mahalle}</strong>
                 <br />
-                {k.tip === "su" ? "Su kesintisi" : "Elektrik kesintisi"}
-                {k.aciklama && <><br />{k.aciklama}</>}
+                {kesintiEtiketi(k.tip)}
+                {k.aciklama && (
+                  <>
+                    <br />
+                    {k.aciklama}
+                  </>
+                )}
               </Popup>
             </Circle>
           ))}
-          {basvurular.map((b) => {
-            if (b.lat == null || b.lng == null) return null;
+          {haritaBasvurular.map((b) => {
             const color = TIP_COLORS[b.basvuru_tipi || ""] || "#6b7280";
             return (
-              <Marker
-                key={b.id}
-                position={[b.lat, b.lng]}
-                icon={makeIcon(color)}
-              >
+              <Marker key={b.id} position={[b.lat!, b.lng!]} icon={makeIcon(color)}>
                 <Popup>
-                  <strong>#{b.id} — {b.konu}</strong>
+                  <strong>
+                    #{b.id} — {b.konu}
+                  </strong>
                   <br />
                   {getHaritaSikayetById(b.basvuru_tipi || "")?.label || b.basvuru_tipi || "Genel"}
                   <br />
